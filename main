@@ -1,231 +1,200 @@
 --[[ 
-    🩴 CHINELAOHUB - TECH PERFECT STYLE
-    - Interface Profissional baseada na imagem enviada.
-    - Sistema de Minimização em Barra (mantém o nome e é arrastável).
-    - Detecção de Elite (Nomes, Textos e Mutações Visuais).
+    🩴 CHINELAOHUB - PREMIUM TECH EDITION
+    Inspirado no estilo Chilli Hub (Deep Sea Gradient & Glow)
 ]]
 
-local UserInputService = game:GetService("UserInputService")
-local SoundService = game:GetService("SoundService")
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-local player = Players.LocalPlayer
-local pgui = player:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
 
--- Configurações de Busca
-local CONFIG = {
-	KEYWORDS = {"mitico", "mythic", "secreto", "secret", "stellar", "galaxy", "pipi", "potato"},
-	RARE_MATERIALS = {Enum.Material.Neon, Enum.Material.ForceField},
-	ALERT_ID = "9114283110"
+-- [[ FUNÇÃO PARA RODAR EM LUGAR SEGURO ]] --
+local function GetSafeGui()
+    if gethui then return gethui() end
+    if CoreGui then return CoreGui end
+    return LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local parentGui = GetSafeGui()
+
+-- [[ PALETA DE CORES PREMIUM ]] --
+local COLORS = {
+    BG = Color3.fromRGB(16, 24, 39),
+    GRAD_1 = Color3.fromRGB(12, 18, 32),
+    GRAD_2 = Color3.fromRGB(21, 30, 47),
+    GRAD_3 = Color3.fromRGB(10, 82, 120),
+    STROKE_MAIN = Color3.fromRGB(56, 189, 248),
+    TEXT = Color3.fromRGB(241, 245, 249),
+    ACCENT = Color3.fromRGB(34, 211, 238)
 }
 
-local RadarOn = true
-local CurrentID = CONFIG.ALERT_ID
-local Detected = {}
+-- [[ CONFIGS DO HUB ]] --
+local RadarActive = true
+local CurrentID = "9114283110"
 
--- ============================================================
--- FUNÇÃO DE ARRASTAR (DRAG) TOTAL
--- ============================================================
-local function MakeDraggable(frame)
-	local dragging, dragInput, dragStart, startPos
-	frame.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
-		end
-	end)
-	frame.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		end
-	end)
-end
-
--- ============================================================
--- INTERFACE ESTILO TECH PERFECT
--- ============================================================
-local sg = Instance.new("ScreenGui", pgui)
-sg.Name = "ChinelaoHub_Tech"
+-- [[ UI PRINCIPAL ]] --
+local sg = Instance.new("ScreenGui")
+sg.Name = "ChinelaoHub_Premium"
 sg.ResetOnSpawn = false
+sg.Parent = parentGui
 
--- FRAME PRINCIPAL
-local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.new(0, 450, 0, 320)
-Main.Position = UDim2.new(0.5, -225, 0.4, -160)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
-local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = Color3.fromRGB(0, 255, 0)
-MainStroke.Thickness = 2
-
--- BARRA DE TÍTULO
-local Header = Instance.new("Frame", Main)
-Header.Size = UDim2.new(1, 0, 0, 40)
-Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Header.BorderSizePixel = 0
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
-
-local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(0, 200, 1, 0)
-Title.Position = UDim2.new(0, 15, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "Tech Perfect | Chinelao Hub"
-Title.TextColor3 = Color3.fromRGB(0, 255, 0)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
-Title.TextXAlignment = Enum.TextXAlignment.Left
-
--- BOTÕES DE CONTROLE (-, O, X)
-local ControlBox = Instance.new("Frame", Header)
-ControlBox.Size = UDim2.new(0, 100, 1, 0)
-ControlBox.Position = UDim2.new(1, -110, 0, 0)
-ControlBox.BackgroundTransparency = 1
-
-local function createControlBtn(txt, pos, color)
-	local b = Instance.new("TextButton", ControlBox)
-	b.Size = UDim2.new(0, 25, 0, 25)
-	b.Position = pos
-	b.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	b.Text = txt
-	b.TextColor3 = color or Color3.new(1,1,1)
-	b.Font = Enum.Font.GothamBold
-	Instance.new("UICorner", b)
-	return b
+-- Função de Arrastar (Draggable)
+local function MakeDraggable(frame)
+    local dragging, dragInput, dragStart, startPos
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+    frame.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    end)
 end
 
-local minBtn = createControlBtn("-", UDim2.new(0, 0, 0.2, 0))
-local closeBtn = createControlBtn("X", UDim2.new(0, 70, 0.2, 0), Color3.new(1,0,0))
+-- CARD PRINCIPAL (Estilo Chilli Hub)
+local MainCard = Instance.new("Frame")
+MainCard.Name = "MainCard"
+MainCard.Size = UDim2.fromOffset(380, 230)
+MainCard.Position = UDim2.new(0.5, -190, 0.4, -115)
+MainCard.BackgroundColor3 = COLORS.BG
+MainCard.BorderSizePixel = 0
+MainCard.Parent = sg
 
--- CONTEÚDO (ESTILO TECH)
-local Content = Instance.new("Frame", Main)
-Content.Size = UDim2.new(1, -20, 1, -60)
-Content.Position = UDim2.new(0, 10, 0, 50)
-Content.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Instance.new("UICorner", Content)
+local Corner = Instance.new("UICorner", MainCard)
+Corner.CornerRadius = UDim.new(0, 20)
 
-local ToggleBtn = Instance.new("TextButton", Content)
-ToggleBtn.Size = UDim2.new(0.9, 0, 0, 50)
-ToggleBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleBtn.Text = "Enable Radar: ON"
-ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
-ToggleBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", ToggleBtn)
+-- Gradiente de Fundo
+local BgGrad = Instance.new("UIGradient", MainCard)
+BgGrad.Rotation = 35
+BgGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, COLORS.GRAD_1),
+    ColorSequenceKeypoint.new(0.55, COLORS.GRAD_2),
+    ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
+})
 
-local AudioInput = Instance.new("TextBox", Content)
-AudioInput.Size = UDim2.new(0.9, 0, 0, 40)
-AudioInput.Position = UDim2.new(0.05, 0, 0.35, 0)
-AudioInput.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-AudioInput.Text = CONFIG.ALERT_ID
-AudioInput.PlaceholderText = "Paste Sound ID"
-AudioInput.TextColor3 = Color3.fromRGB(0, 255, 0)
-AudioInput.Font = Enum.Font.Code
-Instance.new("UICorner", AudioInput)
+-- Bordas com Brilho (Strokes)
+local GlowStroke = Instance.new("UIStroke", MainCard)
+GlowStroke.Thickness = 5
+GlowStroke.Transparency = 0.85
+GlowStroke.Color = COLORS.STROKE_MAIN
 
-local StatusTxt = Instance.new("TextLabel", Content)
-StatusTxt.Size = UDim2.new(0.9, 0, 0, 80)
-StatusTxt.Position = UDim2.new(0.05, 0, 0.6, 0)
-StatusTxt.BackgroundTransparency = 1
-StatusTxt.Text = "Searching for Brainrots..."
-StatusTxt.TextColor3 = Color3.fromRGB(150, 150, 150)
-StatusTxt.Font = Enum.Font.Gotham
-StatusTxt.TextWrapped = true
+local MainStroke = Instance.new("UIStroke", MainCard)
+MainStroke.Thickness = 2
+MainStroke.Transparency = 0.2
+MainStroke.Color = COLORS.STROKE_MAIN
 
--- ============================================================
--- BARRA MINIMIZADA (COMO VOCÊ PEDIU)
--- ============================================================
-local Minibar = Instance.new("Frame", sg)
-Minibar.Size = UDim2.new(0, 180, 0, 35)
-Minibar.Position = UDim2.new(0.1, 0, 0.1, 0)
-Minibar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Minibar.Visible = false
-Instance.new("UICorner", Minibar)
-local MiniStroke = Instance.new("UIStroke", Minibar)
-MiniStroke.Color = Color3.fromRGB(0, 255, 0)
-MiniStroke.Thickness = 2
+-- TOP BAR
+local TopBar = Instance.new("Frame", MainCard)
+TopBar.Size = UDim2.new(1, -16, 0, 42)
+TopBar.Position = UDim2.new(0, 8, 0, 8)
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
+TopBar.BackgroundTransparency = 0.3
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 14)
 
-local MiniLabel = Instance.new("TextLabel", Minibar)
-MiniLabel.Size = UDim2.new(1, -40, 1, 0)
-MiniLabel.Position = UDim2.new(0, 10, 0, 0)
-MiniLabel.BackgroundTransparency = 1
-MiniLabel.Text = "Chinelaohub Hub"
-MiniLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-MiniLabel.Font = Enum.Font.GothamBold
-MiniLabel.TextSize = 14
-MiniLabel.TextXAlignment = Enum.TextXAlignment.Left
+local Title = Instance.new("TextLabel", TopBar)
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "CHINELAOHUB PREM"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.TextColor3 = COLORS.TEXT
+local TitleGrad = Instance.new("UIGradient", Title)
+TitleGrad.Color = ColorSequence.new(COLORS.ACCENT, Color3.new(1,1,1))
 
-local RestoreBtn = Instance.new("TextButton", Minibar)
-RestoreBtn.Size = UDim2.new(0, 25, 0, 25)
-RestoreBtn.Position = UDim2.new(1, -30, 0.15, 0)
-RestoreBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+-- BOTÃO MINIMIZAR
+local MinBtn = Instance.new("TextButton", TopBar)
+MinBtn.Size = UDim2.fromOffset(30, 30)
+MinBtn.Position = UDim2.new(1, -38, 0.5, -15)
+MinBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+MinBtn.Text = "-"
+MinBtn.TextColor3 = COLORS.TEXT
+MinBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
+
+-- CONTEÚDO (BOTOES)
+local Container = Instance.new("Frame", MainCard)
+Container.Size = UDim2.new(1, -30, 1, -70)
+Container.Position = UDim2.new(0, 15, 0, 60)
+Container.BackgroundTransparency = 1
+
+-- Botão Radar
+local RadarBtn = Instance.new("TextButton", Container)
+RadarBtn.Size = UDim2.new(1, 0, 0, 45)
+RadarBtn.BackgroundColor3 = COLORS.ACCENT
+RadarBtn.Text = "RADAR: ACTIVE"
+RadarBtn.Font = Enum.Font.GothamBlack
+RadarBtn.TextSize = 16
+RadarBtn.TextColor3 = COLORS.BG
+Instance.new("UICorner", RadarBtn).CornerRadius = UDim.new(0, 12)
+
+-- ID Input (Estilo Chilli)
+local IdInput = Instance.new("TextBox", Container)
+IdInput.Size = UDim2.new(1, 0, 0, 40)
+IdInput.Position = UDim2.new(0, 0, 0, 55)
+IdInput.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
+IdInput.Text = CurrentID
+IdInput.PlaceholderText = "ALARM ID"
+IdInput.TextColor3 = COLORS.TEXT
+IdInput.Font = Enum.Font.Code
+Instance.new("UICorner", IdInput).CornerRadius = UDim.new(0, 10)
+local InputStroke = Instance.new("UIStroke", IdInput)
+InputStroke.Thickness = 1
+InputStroke.Color = COLORS.STROKE_MAIN
+
+-- MINI BARRA (Minimizada)
+local MiniBar = Instance.new("Frame", sg)
+MiniBar.Size = UDim2.fromOffset(160, 40)
+MiniBar.Position = UDim2.new(0.1, 0, 0.1, 0)
+MiniBar.BackgroundColor3 = COLORS.BG
+MiniBar.Visible = false
+Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", MiniBar).Color = COLORS.STROKE_MAIN
+
+local MiniTitle = Instance.new("TextLabel", MiniBar)
+MiniTitle.Size = UDim2.new(1, -40, 1, 0)
+MiniTitle.Position = UDim2.new(0, 10, 0, 0)
+MiniTitle.BackgroundTransparency = 1
+MiniTitle.Text = "🩴 Chinelaohub"
+MiniTitle.TextColor3 = COLORS.ACCENT
+MiniTitle.Font = Enum.Font.GothamBold
+MiniTitle.TextSize = 14
+
+local RestoreBtn = Instance.new("TextButton", MiniBar)
+RestoreBtn.Size = UDim2.fromOffset(30, 30)
+RestoreBtn.Position = UDim2.new(1, -35, 0.5, -15)
 RestoreBtn.Text = "+"
+RestoreBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
 RestoreBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", RestoreBtn)
 
--- ARRASTAR TUDO
-MakeDraggable(Main)
-MakeDraggable(Minibar)
+-- FUNCIONALIDADES
+MakeDraggable(MainCard)
+MakeDraggable(MiniBar)
 
--- ============================================================
--- LOGICA DE FUNCIONAMENTO
--- ============================================================
-local function isRare(item)
-	if not item then return false end
-	local n = item.Name:lower()
-	for _, k in pairs(CONFIG.KEYWORDS) do if n:find(k) then return true end end
-	for _, v in pairs(item:GetDescendants()) do
-		if v:IsA("TextLabel") and v.Visible then
-			for _, k in pairs(CONFIG.KEYWORDS) do if v.Text:lower():find(k) then return true end end
-		elseif v:IsA("BasePart") and table.find(CONFIG.RARE_MATERIALS, v.Material) then
-			local c = v.Color
-			if (c.R > 0.7 and c.G > 0.5) or (c.R < 0.5 and c.G > 0.7 and c.B > 0.7) then return true end
-		end
-	end
-	return false
-end
-
-local function Alert(item)
-	if Detected[item] then return end
-	Detected[item] = true
-	local h = Instance.new("Highlight", item)
-	h.FillColor = Color3.new(1,0,0)
-	task.spawn(function()
-		local s = Instance.new("Sound", SoundService)
-		s.SoundId = "rbxassetid://" .. CurrentID:gsub("%D", "")
-		s.Volume = 2
-		s:Play()
-		task.wait(10)
-		s:Destroy()
-	end)
-end
-
--- EVENTOS
-minBtn.MouseButton1Click:Connect(function() Main.Visible = false; Minibar.Visible = true end)
-RestoreBtn.MouseButton1Click:Connect(function() Main.Visible = true; Minibar.Visible = false end)
-closeBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
-
-ToggleBtn.MouseButton1Click:Connect(function()
-	RadarOn = not RadarOn
-	ToggleBtn.Text = "Enable Radar: " .. (RadarOn and "ON" or "OFF")
-	ToggleBtn.TextColor3 = RadarOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+MinBtn.MouseButton1Click:Connect(function()
+    MainCard.Visible = false
+    MiniBar.Visible = true
 end)
 
-AudioInput.FocusLost:Connect(function() CurrentID = AudioInput.Text end)
-
--- MONITOR
-task.spawn(function()
-	local p = workspace:FindFirstChild("Drops") or workspace:FindFirstChild("Items")
-	if p then
-		p.ChildAdded:Connect(function(c)
-			if not RadarOn then return end
-			task.wait(0.6)
-			if isRare(c) then Alert(c) end
-		end)
-	end
+RestoreBtn.MouseButton1Click:Connect(function()
+    MainCard.Visible = true
+    MiniBar.Visible = false
 end)
+
+RadarBtn.MouseButton1Click:Connect(function()
+    RadarActive = not RadarActive
+    RadarBtn.Text = RadarActive and "RADAR: ACTIVE" or "RADAR: OFF"
+    RadarBtn.BackgroundColor3 = RadarActive and COLORS.ACCENT or Color3.fromRGB(255, 80, 80)
+end)
+
+print("🩴 CHINELAOHUB PREMIUM INTERFACE LOADED!")
