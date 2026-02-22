@@ -1,26 +1,34 @@
 -- ============================================================
--- CHINELAOHUB RADAR - Laboratório Brainrot
--- Script de detecção de itens raros com alertas visuais e sonoros
+-- CHINELAOHUB RADAR - VERSÃO DEBUG
+-- Script com diagnóstico completo
 -- ============================================================
 
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
-local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- ============================================================
+-- MODO DEBUG
+-- ============================================================
+
+local DEBUG_MODE = true -- Ativar para diagnóstico
+
+local function debug(message)
+	if DEBUG_MODE then
+		print("[DEBUG] " .. tostring(message))
+	end
+end
 
 -- ============================================================
 -- CONFIGURAÇÕES
 -- ============================================================
 
 local CONFIG = {
-	-- Pastas onde procurar itens (tenta ambas)
-	DROP_FOLDERS = {"Drops", "Items"},
+	DROP_FOLDERS = {"Drops", "Items", "DropZone", "ItemSpawner", "Spawner"},
 	
-	-- Palavras-chave para itens raros (case-insensitive)
 	RARE_KEYWORDS = {
 		"mítico", "mythic",
 		"secreto", "secret",
@@ -31,22 +39,20 @@ local CONFIG = {
 		"galaxy"
 	},
 	
-	-- Cores para mutações (RGB 0-1)
 	RARE_COLORS = {
-		gold = Color3.fromRGB(255, 215, 0),      -- Ouro
-		diamond = Color3.fromRGB(0, 255, 255),  -- Ciano/Azul claro
-		gold_alt = Color3.fromRGB(255, 170, 0)  -- Ouro alternativo
+		gold = Color3.fromRGB(255, 215, 0),
+		gold_alt1 = Color3.fromRGB(255, 170, 0),
+		gold_alt2 = Color3.fromRGB(255, 200, 0),
+		diamond = Color3.fromRGB(0, 255, 255),
+		diamond_alt = Color3.fromRGB(100, 200, 255),
 	},
 	
-	-- Configuração de áudio
-	DEFAULT_AUDIO_ID = "rbxassetid://9114283110", -- Som padrão alerta
-	ALERT_DURATION = 10, -- segundos
+	DEFAULT_AUDIO_ID = "rbxassetid://9114283110",
+	ALERT_DURATION = 10,
 	
-	-- Materiais raros
 	RARE_MATERIALS = {"Neon", "ForceField"},
 	
-	-- Tolerância de cor (distância RGB)
-	COLOR_TOLERANCE = 0.3
+	COLOR_TOLERANCE = 0.4 -- Aumentado para maior tolerância
 }
 
 -- ============================================================
@@ -55,11 +61,12 @@ local CONFIG = {
 
 local radarActive = true
 local currentAudioId = CONFIG.DEFAULT_AUDIO_ID
-local detectedItems = {} -- Tabela para evitar detecções duplicadas
-local activeAlerts = {} -- Controlar alertas ativos
+local detectedItems = {}
+local activeAlerts = {}
+local scannedItems = {} -- Rastrear itens já escaneados
 
 -- ============================================================
--- FUNÇÃO: Calcular distância RGB
+-- FUNÇÃO: Função auxiliar para comparar cores
 -- ============================================================
 
 local function colorDistance(color1, color2)
@@ -70,7 +77,7 @@ local function colorDistance(color1, color2)
 end
 
 -- ============================================================
--- FUNÇÃO: Verificar se cor combina com cor rara
+-- FUNÇÃO: Verificar se é cor rara com DEBUG
 -- ============================================================
 
 local function isRareColor(part)
@@ -78,8 +85,10 @@ local function isRareColor(part)
 	
 	local partColor = part.Color
 	
-	for _, rareColor in pairs(CONFIG.RARE_COLORS) do
-		if colorDistance(partColor, rareColor) < CONFIG.COLOR_TOLERANCE then
+	for colorName, rareColor in pairs(CONFIG.RARE_COLORS) do
+		local distance = colorDistance(partColor, rareColor)
+		if distance < CONFIG.COLOR_TOLERANCE then
+			debug("✅ COR RARA ENCONTRADA: " .. colorName .. " | Distância: " .. string.format("%.2f", distance))
 			return true
 		end
 	end
@@ -88,14 +97,17 @@ local function isRareColor(part)
 end
 
 -- ============================================================
--- FUNÇÃO: Verificar se material é raro
+-- FUNÇÃO: Verificar material com DEBUG
 -- ============================================================
 
 local function isRareMaterial(part)
 	if not part:IsA("BasePart") then return false end
 	
+	local materialStr = tostring(part.Material)
+	
 	for _, material in pairs(CONFIG.RARE_MATERIALS) do
-		if tostring(part.Material) == material then
+		if materialStr == material then
+			debug("✅ MATERIAL RARO ENCONTRADO: " .. materialStr)
 			return true
 		end
 	end
@@ -104,7 +116,7 @@ local function isRareMaterial(part)
 end
 
 -- ============================================================
--- FUNÇÃO: Buscar por palavras-chave no texto
+-- FUNÇÃO: Buscar palavras-chave com DEBUG
 -- ============================================================
 
 local function containsRareKeyword(text)
@@ -114,6 +126,7 @@ local function containsRareKeyword(text)
 	
 	for _, keyword in pairs(CONFIG.RARE_KEYWORDS) do
 		if string.find(text, keyword) then
+			debug("✅ PALAVRA-CHAVE ENCONTRADA: '" .. keyword .. "' em: " .. text)
 			return true
 		end
 	end
@@ -122,80 +135,99 @@ local function containsRareKeyword(text)
 end
 
 -- ============================================================
--- FUNÇÃO: Verificar BillboardGui para palavras-chave
+-- FUNÇÃO: Escanear TODOS os atributos de um item
 -- ============================================================
 
-local function checkBillboardGui(item)
-	for _, child in pairs(item:GetDescendants()) do
-		if child:IsA("BillboardGui") then
-			for _, textLabel in pairs(child:GetDescendants()) do
-				if textLabel:IsA("TextLabel") or textLabel:IsA("TextBox") then
-					if containsRareKeyword(textLabel.Text) then
+local function scanItemAttributes(item)
+	debug("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	debug("🔍 ESCANEANDO ITEM: " .. item.Name)
+	debug("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	
+	-- 1. Verificar nome
+	debug("📌 Nome: " .. item.Name)
+	if containsRareKeyword(item.Name) then
+		return true
+	end
+	
+	-- 2. Escanear atributos (CustomProperties)
+	debug("📋 Atributos do item:")
+	for _, attr in pairs(item:GetAttributes()) do
+		local value = item:GetAttribute(attr)
+		debug("  - " .. attr .. " = " .. tostring(value))
+		if type(value) == "string" and containsRareKeyword(value) then
+			return true
+		end
+	end
+	
+	-- 3. Escanear descendants diretos
+	debug("📦 Descendants diretos:")
+	for i, descendant in pairs(item:GetChildren()) do
+		debug("  [" .. i .. "] " .. descendant.Name .. " (" .. descendant.ClassName .. ")")
+		
+		-- Verificar TextLabel
+		if descendant:IsA("TextLabel") or descendant:IsA("TextBox") then
+			debug("     📝 Texto: " .. descendant.Text)
+			if containsRareKeyword(descendant.Text) then
+				return true
+			end
+		end
+		
+		-- Verificar BillboardGui
+		if descendant:IsA("BillboardGui") then
+			debug("     🎨 BillboardGui encontrado")
+			for _, gui_child in pairs(descendant:GetChildren()) do
+				if gui_child:IsA("TextLabel") or gui_child:IsA("TextBox") then
+					debug("       📝 Texto: " .. gui_child.Text)
+					if containsRareKeyword(gui_child.Text) then
 						return true
 					end
 				end
 			end
 		end
-	end
-	
-	return false
-end
-
--- ============================================================
--- FUNÇÃO: Detectar mutações visuais (Neon + Cor rara)
--- ============================================================
-
-local function detectMutation(item)
-	for _, part in pairs(item:FindPartBoundsInRadius(item.Position, 50)) do
-		if part:IsDescendantOf(item) then
-			if isRareMaterial(part) and isRareColor(part) then
+		
+		-- Verificar partes com cores/materiais
+		if descendant:IsA("BasePart") then
+			local material = tostring(descendant.Material)
+			local color = descendant.Color
+			debug("     🔷 Parte: " .. material .. " | RGB(" .. math.floor(color.R*255) .. "," .. math.floor(color.G*255) .. "," .. math.floor(color.B*255) .. ")")
+			
+			if isRareMaterial(descendant) and isRareColor(descendant) then
+				debug("     ⭐ MUTAÇÃO VISUAL DETECTADA!")
 				return true
 			end
 		end
 	end
 	
+	debug("❌ Nenhuma característica rara encontrada")
+	debug("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
 	return false
 end
 
 -- ============================================================
--- FUNÇÃO: Verificar se item é raro (Texto OU Mutação)
+-- FUNÇÃO: Verificar se é item raro (VERSÃO COMPLETA)
 -- ============================================================
 
 local function isRareItem(item)
-	if not item then return false end
-	
-	-- Verificação 1: Nome do objeto
-	if containsRareKeyword(item.Name) then
-		return true
+	if not item or scannedItems[item] then
+		return false
 	end
 	
-	-- Verificação 2: BillboardGui / TextLabel
-	if checkBillboardGui(item) then
-		return true
-	end
-	
-	-- Verificação 3: Mutações visuais (Neon/ForceField + Cor)
-	if detectMutation(item) then
-		return true
-	end
-	
-	return false
+	scannedItems[item] = true
+	return scanItemAttributes(item)
 end
 
 -- ============================================================
--- FUNÇÃO: Aplicar Highlight no item
+-- FUNÇÃO: Aplicar Highlight
 -- ============================================================
 
 local function applyHighlight(item)
-	-- Remover highlight antigo se existir
 	if item:FindFirstChild("Highlight") then
 		item:FindFirstChild("Highlight"):Destroy()
 	end
 	
-	-- Criar novo highlight
 	local highlight = Instance.new("Highlight")
-	highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Vermelho
-	highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Branco
+	highlight.FillColor = Color3.fromRGB(255, 0, 0)
+	highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
 	highlight.OutlineTransparency = 0.5
 	highlight.FillTransparency = 0.3
 	highlight.Parent = item
@@ -204,29 +236,16 @@ local function applyHighlight(item)
 end
 
 -- ============================================================
--- FUNÇÃO: Remover Highlight
--- ============================================================
-
-local function removeHighlight(item)
-	local highlight = item:FindFirstChild("Highlight")
-	if highlight then
-		highlight:Destroy()
-	end
-end
-
--- ============================================================
--- FUNÇÃO: Tocar áudio de alerta
+-- FUNÇÃO: Tocar áudio
 -- ============================================================
 
 local function playAlert()
-	-- Evitar múltiplos sons simultâneos
 	if activeAlerts[currentAudioId] then
 		return
 	end
 	
 	activeAlerts[currentAudioId] = true
 	
-	-- Criar Som no SoundService
 	local sound = Instance.new("Sound")
 	sound.SoundId = currentAudioId
 	sound.Volume = 0.5
@@ -234,7 +253,6 @@ local function playAlert()
 	
 	sound:Play()
 	
-	-- Aguardar duração configurada e remover
 	task.wait(CONFIG.ALERT_DURATION)
 	
 	sound:Destroy()
@@ -242,26 +260,21 @@ local function playAlert()
 end
 
 -- ============================================================
--- FUNÇÃO: Disparar alerta completo
+-- FUNÇÃO: Disparar alerta
 -- ============================================================
 
 local function triggerAlert(item)
-	-- Evitar duplicatas
 	if detectedItems[item] then
 		return
 	end
 	
 	detectedItems[item] = true
 	
-	-- Aplicar highlight
 	applyHighlight(item)
-	
-	-- Tocar áudio (em thread separada)
 	task.spawn(playAlert)
 	
-	print("🚨 ALERTA RARO DETECTADO: " .. item.Name)
+	print("\n🚨🚨🚨 ALERTA RARO DETECTADO: " .. item.Name .. " 🚨🚨🚨\n")
 	
-	-- Remover detecção após o item sair da esteira
 	task.spawn(function()
 		repeat
 			task.wait(1)
@@ -272,48 +285,66 @@ local function triggerAlert(item)
 end
 
 -- ============================================================
--- FUNÇÃO: Monitorar pasta de drops
+-- FUNÇÃO: Encontrar pasta com DEBUG
 -- ============================================================
 
-local function monitorDropFolder()
-	local dropFolder = nil
+local function findDropFolder()
+	debug("\n🔎 Procurando pasta de drops...\n")
 	
-	-- Procurar pasta (Drops ou Items)
+	-- Procurar no Workspace
 	for _, folderName in pairs(CONFIG.DROP_FOLDERS) do
-		dropFolder = workspace:FindFirstChild(folderName)
-		if dropFolder then
-			print("✅ Pasta encontrada: " .. folderName)
-			break
+		local folder = workspace:FindFirstChild(folderName)
+		if folder then
+			debug("✅ Pasta encontrada: " .. folderName)
+			return folder
+		else
+			debug("❌ Pasta não encontrada: " .. folderName)
 		end
 	end
 	
+	-- Se não encontrou, mostrar todas as pastas do Workspace
+	debug("\n📂 PASTAS DISPONÍVEIS NO WORKSPACE:")
+	for _, child in pairs(workspace:GetChildren()) do
+		debug("  - " .. child.Name .. " (" .. child.ClassName .. ")")
+	end
+	
+	return nil
+end
+
+-- ============================================================
+-- FUNÇÃO: Monitorar pasta
+-- ============================================================
+
+local function monitorDropFolder()
+	local dropFolder = findDropFolder()
+	
 	if not dropFolder then
-		print("❌ Pasta 'Drops' ou 'Items' não encontrada no Workspace")
+		debug("❌ NENHUMA PASTA DE DROPS ENCONTRADA! Verifique o nome correto.")
 		return
 	end
+	
+	debug("\n👀 Iniciando monitoramento da pasta: " .. dropFolder.Name)
 	
 	-- Monitorar ChildAdded
 	dropFolder.ChildAdded:Connect(function(item)
 		if not radarActive then return end
 		
-		-- Delay para garantir que mutações carregaram
-		task.wait(0.5)
+		debug("\n🆕 Novo item adicionado: " .. item.Name)
 		
-		if isRareItem(item) then
-			triggerAlert(item)
-		else
-			-- Verificação periódica em caso de mutação atrasada
-			task.spawn(function()
-				for i = 1, 5 do
-					task.wait(0.3)
-					if isRareItem(item) then
-						triggerAlert(item)
-						break
-					end
-				end
-			end)
+		-- Múltiplas verificações com delays crescentes
+		for delay_time = 0.3, 2, 0.3 do
+			task.wait(delay_time)
+			
+			debug("  ⏱️ Verificação após " .. string.format("%.1f", delay_time) .. "s...")
+			
+			if isRareItem(item) then
+				triggerAlert(item)
+				return
+			end
 		end
 	end)
+	
+	debug("✅ Monitoramento ativo!\n")
 end
 
 -- ============================================================
@@ -321,7 +352,6 @@ end
 -- ============================================================
 
 local function createGui()
-	-- Frame principal (arrastável)
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "ChinelaohubRadar"
 	screenGui.ResetOnSpawn = false
@@ -329,7 +359,7 @@ local function createGui()
 	
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainFrame"
-	mainFrame.Size = UDim2.new(0, 350, 0, 280)
+	mainFrame.Size = UDim2.new(0, 400, 0, 350)
 	mainFrame.Position = UDim2.new(0, 20, 0, 100)
 	mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 	mainFrame.BorderColor3 = Color3.fromRGB(255, 100, 0)
@@ -343,12 +373,12 @@ local function createGui()
 	titleLabel.Position = UDim2.new(0, 0, 0, 0)
 	titleLabel.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	titleLabel.TextSize = 18
+	titleLabel.TextSize = 16
 	titleLabel.Font = Enum.Font.GothamBold
-	titleLabel.Text = "🔔 CHINELAOHUB RADAR"
+	titleLabel.Text = "🔔 CHINELAOHUB RADAR [DEBUG]"
 	titleLabel.Parent = mainFrame
 	
-	-- Drag functionality
+	-- Drag
 	local dragging = false
 	local dragStart = nil
 	local frameStart = nil
@@ -406,7 +436,7 @@ local function createGui()
 	audioLabel.Position = UDim2.new(0, 10, 0, 100)
 	audioLabel.BackgroundTransparency = 1
 	audioLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-	audioLabel.TextSize = 12
+	audioLabel.TextSize = 11
 	audioLabel.Font = Enum.Font.Gotham
 	audioLabel.Text = "ID do Áudio:"
 	audioLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -419,7 +449,7 @@ local function createGui()
 	audioBox.Position = UDim2.new(0.1, 0, 0, 125)
 	audioBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	audioBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-	audioBox.TextSize = 12
+	audioBox.TextSize = 11
 	audioBox.Font = Enum.Font.Gotham
 	audioBox.Text = string.match(CONFIG.DEFAULT_AUDIO_ID, "%d+") or "9114283110"
 	audioBox.PlaceholderText = "Cole o ID do áudio"
@@ -430,7 +460,6 @@ local function createGui()
 		if enterPressed or audioBox.Text ~= "" then
 			local audioId = audioBox.Text
 			
-			-- Validar se é número
 			if tonumber(audioId) then
 				currentAudioId = "rbxassetid://" .. audioId
 				print("✅ ID de áudio atualizado: " .. currentAudioId)
@@ -441,37 +470,44 @@ local function createGui()
 		end
 	end)
 	
-	-- Status Label
-	local statusLabel = Instance.new("TextLabel")
-	statusLabel.Name = "StatusLabel"
-	statusLabel.Size = UDim2.new(0.9, 0, 0, 40)
-	statusLabel.Position = UDim2.new(0.05, 0, 0, 170)
-	statusLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-	statusLabel.TextSize = 11
-	statusLabel.Font = Enum.Font.Gotham
-	statusLabel.Text = "📊 Aguardando itens...\n🎙️ Áudio: Padrão"
-	statusLabel.TextWrapped = true
-	statusLabel.Parent = mainFrame
+	-- Botão para DEBUG Manual
+	local debugButton = Instance.new("TextButton")
+	debugButton.Name = "DebugButton"
+	debugButton.Size = UDim2.new(0.8, 0, 0, 30)
+	debugButton.Position = UDim2.new(0.1, 0, 0, 170)
+	debugButton.BackgroundColor3 = Color3.fromRGB(100, 100, 200)
+	debugButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+	debugButton.TextSize = 12
+	debugButton.Font = Enum.Font.GothamBold
+	debugButton.Text = "🔍 ESCANEAR ITENS AGORA"
+	debugButton.Parent = mainFrame
 	
-	-- Atualizar status em tempo real
-	task.spawn(function()
-		while true do
-			task.wait(2)
-			local detectedCount = 0
-			for _ in pairs(detectedItems) do
-				detectedCount = detectedCount + 1
+	debugButton.MouseButton1Click:Connect(function()
+		print("\n" .. string.rep("=", 50))
+		print("ESCANEANDO TODOS OS ITENS DO WORKSPACE")
+		print(string.rep("=", 50) .. "\n")
+		
+		for _, item in pairs(workspace:GetDescendants()) do
+			if item:IsA("Model") or item:IsA("Part") then
+				isRareItem(item)
 			end
-			
-			statusLabel.Text = string.format(
-				"📊 Itens detectados: %d\n🎙️ Som: %s",
-				detectedCount,
-				"Ativo"
-			)
 		end
 	end)
 	
-	print("✅ Interface GUI criada com sucesso!")
+	-- Status Label
+	local statusLabel = Instance.new("TextLabel")
+	statusLabel.Name = "StatusLabel"
+	statusLabel.Size = UDim2.new(0.9, 0, 0, 100)
+	statusLabel.Position = UDim2.new(0.05, 0, 0, 220)
+	statusLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+	statusLabel.TextSize = 10
+	statusLabel.Font = Enum.Font.Gotham
+	statusLabel.Text = "📊 Aguardando...\n\n✅ Abra a DevConsole\n(F9 ou Shift+Ctrl+C)\npara ver o DEBUG!"
+	statusLabel.TextWrapped = true
+	statusLabel.Parent = mainFrame
+	
+	print("✅ Interface GUI criada!")
 end
 
 -- ============================================================
@@ -479,17 +515,17 @@ end
 -- ============================================================
 
 local function initialize()
-	print("🚀 Inicializando CHINELAOHUB RADAR...")
+	print("\n" .. string.rep("=", 50))
+	print("🚀 INICIALIZANDO CHINELAOHUB RADAR [MODO DEBUG]")
+	print(string.rep("=", 50))
 	
-	-- Criar GUI
 	createGui()
-	
-	-- Monitorar drops
 	monitorDropFolder()
 	
-	print("✅ RADAR PRONTO PARA USAR!")
+	print("\n✅ RADAR PRONTO!")
+	print("📌 Abra a DevConsole (F9) para ver o DEBUG detalhado")
+	print(string.rep("=", 50) .. "\n")
 end
 
--- Aguardar carregamento do jogo
 task.wait(1)
 initialize()
