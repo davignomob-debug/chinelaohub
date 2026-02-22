@@ -1,11 +1,12 @@
 --[[ 
-    🩴 CHINELAOHUB - PREMIUM TECH EDITION
-    Inspirado no estilo Chilli Hub (Deep Sea Gradient & Glow)
+    🩴 CHINELAOHUB - PREMIUM TECH EDITION (v2.0)
+    Inspirado no estilo Chilli Hub + Funções CyberHub
 ]]
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
@@ -27,20 +28,17 @@ local COLORS = {
     GRAD_3 = Color3.fromRGB(10, 82, 120),
     STROKE_MAIN = Color3.fromRGB(56, 189, 248),
     TEXT = Color3.fromRGB(241, 245, 249),
-    ACCENT = Color3.fromRGB(34, 211, 238)
+    ACCENT = Color3.fromRGB(34, 211, 238),
+    PREMIUM = Color3.fromRGB(140, 225, 0) -- Cor verde do Server Premium
 }
-
--- [[ CONFIGS DO HUB ]] --
-local RadarActive = true
-local CurrentID = "9114283110"
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoHub_Premium"
+sg.Name = "ChinelaoHub_Premium_V2"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- Função de Arrastar (Draggable)
+-- Função Draggable
 local function MakeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
@@ -56,24 +54,20 @@ local function MakeDraggable(frame)
             frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
-    UserInputService.InputEnded:Connect(function(input)
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
 end
 
--- CARD PRINCIPAL (Estilo Chilli Hub)
+-- CARD PRINCIPAL
 local MainCard = Instance.new("Frame")
-MainCard.Name = "MainCard"
-MainCard.Size = UDim2.fromOffset(380, 230)
-MainCard.Position = UDim2.new(0.5, -190, 0.4, -115)
+MainCard.Size = UDim2.fromOffset(380, 320) -- Aumentei um pouco para caber a nova aba
+MainCard.Position = UDim2.new(0.5, -190, 0.4, -160)
 MainCard.BackgroundColor3 = COLORS.BG
 MainCard.BorderSizePixel = 0
 MainCard.Parent = sg
+Instance.new("UICorner", MainCard).CornerRadius = UDim.new(0, 20)
 
-local Corner = Instance.new("UICorner", MainCard)
-Corner.CornerRadius = UDim.new(0, 20)
-
--- Gradiente de Fundo
 local BgGrad = Instance.new("UIGradient", MainCard)
 BgGrad.Rotation = 35
 BgGrad.Color = ColorSequence.new({
@@ -82,119 +76,104 @@ BgGrad.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
 })
 
--- Bordas com Brilho (Strokes)
-local GlowStroke = Instance.new("UIStroke", MainCard)
-GlowStroke.Thickness = 5
-GlowStroke.Transparency = 0.85
-GlowStroke.Color = COLORS.STROKE_MAIN
-
 local MainStroke = Instance.new("UIStroke", MainCard)
 MainStroke.Thickness = 2
-MainStroke.Transparency = 0.2
 MainStroke.Color = COLORS.STROKE_MAIN
 
 -- TOP BAR
 local TopBar = Instance.new("Frame", MainCard)
 TopBar.Size = UDim2.new(1, -16, 0, 42)
 TopBar.Position = UDim2.new(0, 8, 0, 8)
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
 TopBar.BackgroundTransparency = 0.3
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 14)
 
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(1, 0, 1, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "CHINELAOHUB PREM"
+Title.Text = "CHINELAOHUB | SYSTEM CORE"
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
+Title.TextSize = 16
 Title.TextColor3 = COLORS.TEXT
-local TitleGrad = Instance.new("UIGradient", Title)
-TitleGrad.Color = ColorSequence.new(COLORS.ACCENT, Color3.new(1,1,1))
 
--- BOTÃO MINIMIZAR
-local MinBtn = Instance.new("TextButton", TopBar)
-MinBtn.Size = UDim2.fromOffset(30, 30)
-MinBtn.Position = UDim2.new(1, -38, 0.5, -15)
-MinBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-MinBtn.Text = "-"
-MinBtn.TextColor3 = COLORS.TEXT
-MinBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
+-- CONTAINER DE BOTÕES
+local Content = Instance.new("Frame", MainCard)
+Content.Size = UDim2.new(1, -30, 1, -70)
+Content.Position = UDim2.new(0, 15, 0, 60)
+Content.BackgroundTransparency = 1
 
--- CONTEÚDO (BOTOES)
-local Container = Instance.new("Frame", MainCard)
-Container.Size = UDim2.new(1, -30, 1, -70)
-Container.Position = UDim2.new(0, 15, 0, 60)
-Container.BackgroundTransparency = 1
+local UIList = Instance.new("UIListLayout", Content)
+UIList.Padding = UDim.new(0, 10)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Botão Radar
-local RadarBtn = Instance.new("TextButton", Container)
+-- [[ BOTÃO: RADAR (Exemplo)]] --
+local RadarBtn = Instance.new("TextButton", Content)
 RadarBtn.Size = UDim2.new(1, 0, 0, 45)
 RadarBtn.BackgroundColor3 = COLORS.ACCENT
-RadarBtn.Text = "RADAR: ACTIVE"
+RadarBtn.Text = "SYSTEM RADAR: ON"
 RadarBtn.Font = Enum.Font.GothamBlack
-RadarBtn.TextSize = 16
 RadarBtn.TextColor3 = COLORS.BG
-Instance.new("UICorner", RadarBtn).CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", RadarBtn).CornerRadius = UDim.new(0, 10)
 
--- ID Input (Estilo Chilli)
-local IdInput = Instance.new("TextBox", Container)
-IdInput.Size = UDim2.new(1, 0, 0, 40)
-IdInput.Position = UDim2.new(0, 0, 0, 55)
-IdInput.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
-IdInput.Text = CurrentID
-IdInput.PlaceholderText = "ALARM ID"
-IdInput.TextColor3 = COLORS.TEXT
-IdInput.Font = Enum.Font.Code
-Instance.new("UICorner", IdInput).CornerRadius = UDim.new(0, 10)
-local InputStroke = Instance.new("UIStroke", IdInput)
-InputStroke.Thickness = 1
-InputStroke.Color = COLORS.STROKE_MAIN
+-- [[ ABA / SEÇÃO: SERVER PREMIUM ]] --
+local PremiumSection = Instance.new("Frame", Content)
+PremiumSection.Size = UDim2.new(1, 0, 0, 100)
+PremiumSection.BackgroundTransparency = 0.9
+PremiumSection.BackgroundColor3 = COLORS.PREMIUM
+Instance.new("UICorner", PremiumSection)
 
--- MINI BARRA (Minimizada)
-local MiniBar = Instance.new("Frame", sg)
-MiniBar.Size = UDim2.fromOffset(160, 40)
-MiniBar.Position = UDim2.new(0.1, 0, 0.1, 0)
-MiniBar.BackgroundColor3 = COLORS.BG
-MiniBar.Visible = false
-Instance.new("UICorner", MiniBar).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", MiniBar).Color = COLORS.STROKE_MAIN
+local PremiumTitle = Instance.new("TextLabel", PremiumSection)
+PremiumTitle.Size = UDim2.new(1, 0, 0, 30)
+PremiumTitle.Text = "SERVER PREMIUM"
+PremiumTitle.Font = Enum.Font.GothamBold
+PremiumTitle.TextColor3 = COLORS.PREMIUM
+PremiumTitle.BackgroundTransparency = 1
 
-local MiniTitle = Instance.new("TextLabel", MiniBar)
-MiniTitle.Size = UDim2.new(1, -40, 1, 0)
-MiniTitle.Position = UDim2.new(0, 10, 0, 0)
-MiniTitle.BackgroundTransparency = 1
-MiniTitle.Text = "🩴 Chinelaohub"
-MiniTitle.TextColor3 = COLORS.ACCENT
-MiniTitle.Font = Enum.Font.GothamBold
-MiniTitle.TextSize = 14
+local bGen = Instance.new("TextButton", PremiumSection)
+bGen.Size = UDim2.new(0.9, 0, 0, 50)
+bGen.Position = UDim2.new(0.05, 0, 0, 40)
+bGen.BackgroundColor3 = Color3.fromRGB(10, 25, 45)
+bGen.Text = "GENERATE NEW SERVER"
+bGen.TextColor3 = COLORS.PREMIUM
+bGen.Font = Enum.Font.Code
+bGen.TextSize = 16
+Instance.new("UICorner", bGen)
+local bStroke = Instance.new("UIStroke", bGen)
+bStroke.Color = COLORS.PREMIUM
+bStroke.Thickness = 1.5
 
-local RestoreBtn = Instance.new("TextButton", MiniBar)
-RestoreBtn.Size = UDim2.fromOffset(30, 30)
-RestoreBtn.Position = UDim2.new(1, -35, 0.5, -15)
-RestoreBtn.Text = "+"
-RestoreBtn.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-RestoreBtn.TextColor3 = Color3.new(1,1,1)
-Instance.new("UICorner", RestoreBtn)
+-- [[ LÓGICA DO SERVER PREMIUM ]] --
+bGen.MouseButton1Click:Connect(function()
+    bGen.Text = "SEARCHING..."
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    
+    if success and result.data then
+        -- Tenta teleportar para o primeiro servidor da lista (geralmente menos lotado/mais novo)
+        for _, server in ipairs(result.data) do
+            if server.playing < server.maxPlayers then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
+                break
+            end
+        end
+    else
+        bGen.Text = "ERROR! TRY AGAIN"
+        task.wait(2)
+        bGen.Text = "GENERATE NEW SERVER"
+    end
+end)
 
--- FUNCIONALIDADES
+-- BOTAO FECHAR
+local CloseBtn = Instance.new("TextButton", TopBar)
+CloseBtn.Size = UDim2.fromOffset(30, 30)
+CloseBtn.Position = UDim2.new(1, -38, 0.5, -15)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1, 0, 0)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
 MakeDraggable(MainCard)
-MakeDraggable(MiniBar)
 
-MinBtn.MouseButton1Click:Connect(function()
-    MainCard.Visible = false
-    MiniBar.Visible = true
-end)
-
-RestoreBtn.MouseButton1Click:Connect(function()
-    MainCard.Visible = true
-    MiniBar.Visible = false
-end)
-
-RadarBtn.MouseButton1Click:Connect(function()
-    RadarActive = not RadarActive
-    RadarBtn.Text = RadarActive and "RADAR: ACTIVE" or "RADAR: OFF"
-    RadarBtn.BackgroundColor3 = RadarActive and COLORS.ACCENT or Color3.fromRGB(255, 80, 80)
-end)
-
-print("🩴 CHINELAOHUB PREMIUM INTERFACE LOADED!")
+print("🩴 CHINELAOHUB: SERVER PREMIUM TAB LOADED!")
