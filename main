@@ -1,218 +1,231 @@
---[[
-    🩴 CHINELAOHUB - SUPREME EDITION (v30.0)
-    - Interface Dark Neon Arrastável
-    - Detecção por Nome, Texto (Billboard) e Material (Mutações)
-    - Sistema de Alerta com Áudio Configurável (10s)
+--[[ 
+    🩴 CHINELAOHUB - TECH PERFECT STYLE
+    - Interface Profissional baseada na imagem enviada.
+    - Sistema de Minimização em Barra (mantém o nome e é arrastável).
+    - Detecção de Elite (Nomes, Textos e Mutações Visuais).
 ]]
 
-local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
-local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
 local pgui = player:WaitForChild("PlayerGui")
 
--- ============================================================
--- CONFIGURAÇÕES DE FILTRO
--- ============================================================
+-- Configurações de Busca
 local CONFIG = {
-    PALAVRAS_CHAVE = {"mitico", "mythic", "secreto", "secret", "stella", "stellar", "galaxy", "galaxia"},
-    MATERIAIS_MUTACAO = {Enum.Material.Neon, Enum.Material.ForceField},
-    CORES = {
-        OURO = Color3.fromRGB(255, 170, 0),
-        DIAMANTE = Color3.fromRGB(0, 255, 255)
-    },
-    TEMPO_SOM = 10
+	KEYWORDS = {"mitico", "mythic", "secreto", "secret", "stellar", "galaxy", "pipi", "potato"},
+	RARE_MATERIALS = {Enum.Material.Neon, Enum.Material.ForceField},
+	ALERT_ID = "9114283110"
 }
 
-local RadarAtivado = true
-local AudioID = "9114283110"
-local ItensDetectados = {}
+local RadarOn = true
+local CurrentID = CONFIG.ALERT_ID
+local Detected = {}
 
 -- ============================================================
--- FUNÇÃO DE ARRASTAR (DRAG TOTAL)
+-- FUNÇÃO DE ARRASTAR (DRAG) TOTAL
 -- ============================================================
-local function EnableDrag(frame)
-    local dragging, dragInput, dragStart, startPos
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    frame.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
+local function MakeDraggable(frame)
+	local dragging, dragInput, dragStart, startPos
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then dragging = false end
+			end)
+		end
+	end)
+	frame.InputChanged:Connect(function(input)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
 end
 
 -- ============================================================
--- LÓGICA DE DETECÇÃO DE ELITE
+-- INTERFACE ESTILO TECH PERFECT
 -- ============================================================
-local function IsRare(item)
-    if not item then return false end
-    local nome = item.Name:lower()
-    
-    -- 1. Checa Nome do Objeto
-    for _, k in pairs(CONFIG.PALAVRAS_CHAVE) do if nome:find(k) then return true end end
-    
-    -- 2. Checa Descendentes (BillboardGuis e Partes)
-    for _, v in pairs(item:GetDescendants()) do
-        if v:IsA("TextLabel") and v.Visible then
-            local txt = v.Text:lower()
-            for _, k in pairs(CONFIG.PALAVRAS_CHAVE) do if txt:find(k) then return true end end
-        elseif v:IsA("BasePart") and table.find(CONFIG.MATERIAIS_MUTACAO, v.Material) then
-            -- Detecção de Ouro/Diamante por Cor e Brilho
-            local c = v.Color
-            local isGold = (c.R > 0.7 and c.G > 0.5 and c.B < 0.4)
-            local isDiamond = (c.R < 0.5 and c.G > 0.7 and c.B > 0.7)
-            if isGold or isDiamond then return true end
-        end
-    end
-    return false
+local sg = Instance.new("ScreenGui", pgui)
+sg.Name = "ChinelaoHub_Tech"
+sg.ResetOnSpawn = false
+
+-- FRAME PRINCIPAL
+local Main = Instance.new("Frame", sg)
+Main.Size = UDim2.new(0, 450, 0, 320)
+Main.Position = UDim2.new(0.5, -225, 0.4, -160)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Main.BorderSizePixel = 0
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Color3.fromRGB(0, 255, 0)
+MainStroke.Thickness = 2
+
+-- BARRA DE TÍTULO
+local Header = Instance.new("Frame", Main)
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Header.BorderSizePixel = 0
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Tech Perfect | Chinelao Hub"
+Title.TextColor3 = Color3.fromRGB(0, 255, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- BOTÕES DE CONTROLE (-, O, X)
+local ControlBox = Instance.new("Frame", Header)
+ControlBox.Size = UDim2.new(0, 100, 1, 0)
+ControlBox.Position = UDim2.new(1, -110, 0, 0)
+ControlBox.BackgroundTransparency = 1
+
+local function createControlBtn(txt, pos, color)
+	local b = Instance.new("TextButton", ControlBox)
+	b.Size = UDim2.new(0, 25, 0, 25)
+	b.Position = pos
+	b.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	b.Text = txt
+	b.TextColor3 = color or Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamBold
+	Instance.new("UICorner", b)
+	return b
+end
+
+local minBtn = createControlBtn("-", UDim2.new(0, 0, 0.2, 0))
+local closeBtn = createControlBtn("X", UDim2.new(0, 70, 0.2, 0), Color3.new(1,0,0))
+
+-- CONTEÚDO (ESTILO TECH)
+local Content = Instance.new("Frame", Main)
+Content.Size = UDim2.new(1, -20, 1, -60)
+Content.Position = UDim2.new(0, 10, 0, 50)
+Content.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Instance.new("UICorner", Content)
+
+local ToggleBtn = Instance.new("TextButton", Content)
+ToggleBtn.Size = UDim2.new(0.9, 0, 0, 50)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.Text = "Enable Radar: ON"
+ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+ToggleBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", ToggleBtn)
+
+local AudioInput = Instance.new("TextBox", Content)
+AudioInput.Size = UDim2.new(0.9, 0, 0, 40)
+AudioInput.Position = UDim2.new(0.05, 0, 0.35, 0)
+AudioInput.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+AudioInput.Text = CONFIG.ALERT_ID
+AudioInput.PlaceholderText = "Paste Sound ID"
+AudioInput.TextColor3 = Color3.fromRGB(0, 255, 0)
+AudioInput.Font = Enum.Font.Code
+Instance.new("UICorner", AudioInput)
+
+local StatusTxt = Instance.new("TextLabel", Content)
+StatusTxt.Size = UDim2.new(0.9, 0, 0, 80)
+StatusTxt.Position = UDim2.new(0.05, 0, 0.6, 0)
+StatusTxt.BackgroundTransparency = 1
+StatusTxt.Text = "Searching for Brainrots..."
+StatusTxt.TextColor3 = Color3.fromRGB(150, 150, 150)
+StatusTxt.Font = Enum.Font.Gotham
+StatusTxt.TextWrapped = true
+
+-- ============================================================
+-- BARRA MINIMIZADA (COMO VOCÊ PEDIU)
+-- ============================================================
+local Minibar = Instance.new("Frame", sg)
+Minibar.Size = UDim2.new(0, 180, 0, 35)
+Minibar.Position = UDim2.new(0.1, 0, 0.1, 0)
+Minibar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Minibar.Visible = false
+Instance.new("UICorner", Minibar)
+local MiniStroke = Instance.new("UIStroke", Minibar)
+MiniStroke.Color = Color3.fromRGB(0, 255, 0)
+MiniStroke.Thickness = 2
+
+local MiniLabel = Instance.new("TextLabel", Minibar)
+MiniLabel.Size = UDim2.new(1, -40, 1, 0)
+MiniLabel.Position = UDim2.new(0, 10, 0, 0)
+MiniLabel.BackgroundTransparency = 1
+MiniLabel.Text = "Chinelaohub Hub"
+MiniLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+MiniLabel.Font = Enum.Font.GothamBold
+MiniLabel.TextSize = 14
+MiniLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local RestoreBtn = Instance.new("TextButton", Minibar)
+RestoreBtn.Size = UDim2.new(0, 25, 0, 25)
+RestoreBtn.Position = UDim2.new(1, -30, 0.15, 0)
+RestoreBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+RestoreBtn.Text = "+"
+RestoreBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", RestoreBtn)
+
+-- ARRASTAR TUDO
+MakeDraggable(Main)
+MakeDraggable(Minibar)
+
+-- ============================================================
+-- LOGICA DE FUNCIONAMENTO
+-- ============================================================
+local function isRare(item)
+	if not item then return false end
+	local n = item.Name:lower()
+	for _, k in pairs(CONFIG.KEYWORDS) do if n:find(k) then return true end end
+	for _, v in pairs(item:GetDescendants()) do
+		if v:IsA("TextLabel") and v.Visible then
+			for _, k in pairs(CONFIG.KEYWORDS) do if v.Text:lower():find(k) then return true end end
+		elseif v:IsA("BasePart") and table.find(CONFIG.RARE_MATERIALS, v.Material) then
+			local c = v.Color
+			if (c.R > 0.7 and c.G > 0.5) or (c.R < 0.5 and c.G > 0.7 and c.B > 0.7) then return true end
+		end
+	end
+	return false
 end
 
 local function Alert(item)
-    if ItensDetectados[item] then return end
-    ItensDetectados[item] = true
-    
-    -- Efeito Visual
-    local hl = Instance.new("Highlight", item)
-    hl.FillColor = Color3.new(1, 0, 0)
-    hl.OutlineColor = Color3.new(1, 1, 1)
-    
-    -- Efeito Sonoro
-    task.spawn(function()
-        local s = Instance.new("Sound", SoundService)
-        s.SoundId = "rbxassetid://" .. AudioID:gsub("%D", "")
-        s.Volume = 2
-        s:Play()
-        task.wait(CONFIG.TEMPO_SOM)
-        s:Destroy()
-    end)
-    
-    -- Limpa da lista se o item sumir
-    task.spawn(function()
-        while item and item.Parent do task.wait(1) end
-        ItensDetectados[item] = nil
-    end)
+	if Detected[item] then return end
+	Detected[item] = true
+	local h = Instance.new("Highlight", item)
+	h.FillColor = Color3.new(1,0,0)
+	task.spawn(function()
+		local s = Instance.new("Sound", SoundService)
+		s.SoundId = "rbxassetid://" .. CurrentID:gsub("%D", "")
+		s.Volume = 2
+		s:Play()
+		task.wait(10)
+		s:Destroy()
+	end)
 end
 
--- ============================================================
--- INTERFACE BONITA (DARK NEON)
--- ============================================================
-local sg = Instance.new("ScreenGui", pgui)
-sg.Name = "Chinelaohub_Supreme"
-sg.ResetOnSpawn = false
+-- EVENTOS
+minBtn.MouseButton1Click:Connect(function() Main.Visible = false; Minibar.Visible = true end)
+RestoreBtn.MouseButton1Click:Connect(function() Main.Visible = true; Minibar.Visible = false end)
+closeBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
-local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 260, 0, 280)
-main.Position = UDim2.new(0.5, -130, 0.4, 0)
-main.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-main.BorderSizePixel = 0
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
-
-local stroke = Instance.new("UIStroke", main)
-stroke.Color = Color3.fromRGB(255, 60, 0)
-stroke.Thickness = 2
-
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "CHINELAOHUB RADAR"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.FredokaOne
-title.TextSize = 18
-title.BackgroundColor3 = Color3.fromRGB(255, 60, 0)
-Instance.new("UICorner", title).CornerRadius = UDim.new(0, 10)
-
-local toggle = Instance.new("TextButton", main)
-toggle.Size = UDim2.new(0.8, 0, 0, 45)
-toggle.Position = UDim2.new(0.1, 0, 0.25, 0)
-toggle.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-toggle.Text = "RADAR: LIGADO"
-toggle.Font = Enum.Font.GothamBold
-toggle.TextColor3 = Color3.new(1, 1, 1)
-toggle.TextSize = 14
-Instance.new("UICorner", toggle)
-
-local idBox = Instance.new("TextBox", main)
-idBox.Size = UDim2.new(0.8, 0, 0, 35)
-idBox.Position = UDim2.new(0.1, 0, 0.5, 0)
-idBox.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-idBox.Text = AudioID
-idBox.PlaceholderText = "ID do Áudio"
-idBox.TextColor3 = Color3.fromRGB(0, 255, 255)
-idBox.Font = Enum.Font.Code
-Instance.new("UICorner", idBox)
-
-local status = Instance.new("TextLabel", main)
-status.Size = UDim2.new(0.8, 0, 0, 60)
-status.Position = UDim2.new(0.1, 0, 0.7, 0)
-status.BackgroundTransparency = 1
-status.Text = "Buscando Míticos e Mutações..."
-status.TextColor3 = Color3.fromRGB(150, 150, 150)
-status.TextSize = 12
-status.TextWrapped = true
-
--- Sistema de Minimizar
-local miniBtn = Instance.new("TextButton", main)
-miniBtn.Size = UDim2.new(0, 30, 0, 30)
-miniBtn.Position = UDim2.new(1, -35, 0, 5)
-miniBtn.Text = "-"
-miniBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-miniBtn.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", miniBtn)
-
-local float = Instance.new("Frame", sg)
-float.Size = UDim2.new(0, 50, 0, 50)
-float.Position = UDim2.new(0.9, 0, 0.5, 0)
-float.BackgroundColor3 = Color3.fromRGB(255, 60, 0)
-float.Visible = false
-Instance.new("UICorner", float).CornerRadius = UDim.new(1, 0)
-local floatBtn = Instance.new("TextButton", float)
-floatBtn.Size = UDim2.new(1, 0, 1, 0)
-floatBtn.BackgroundTransparency = 1
-floatBtn.Text = "🩴"
-floatBtn.TextSize = 25
-
-EnableDrag(main)
-EnableDrag(float)
-
--- ============================================================
--- INTERATIVIDADE E VARREDURA
--- ============================================================
-toggle.MouseButton1Click:Connect(function()
-    RadarAtivado = not RadarAtivado
-    toggle.Text = RadarAtivado and "RADAR: LIGADO" or "RADAR: DESLIGADO"
-    toggle.BackgroundColor3 = RadarAtivado and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+ToggleBtn.MouseButton1Click:Connect(function()
+	RadarOn = not RadarOn
+	ToggleBtn.Text = "Enable Radar: " .. (RadarOn and "ON" or "OFF")
+	ToggleBtn.TextColor3 = RadarOn and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
 end)
 
-miniBtn.MouseButton1Click:Connect(function() main.Visible = false; float.Visible = true end)
-floatBtn.MouseButton1Click:Connect(function() main.Visible = true; float.Visible = false end)
-idBox.FocusLost:Connect(function() AudioID = idBox.Text end)
+AudioInput.FocusLost:Connect(function() CurrentID = AudioInput.Text end)
 
-local function Monitor()
-    local pasta = workspace:FindFirstChild("Drops") or workspace:FindFirstChild("Items")
-    if pasta then
-        pasta.ChildAdded:Connect(function(child)
-            if not RadarAtivado then return end
-            task.wait(0.6) -- Delay para carregar mutação/nome
-            if IsRare(child) then Alert(child) end
-        end)
-        
-        -- Varredura Inicial
-        for _, v in pairs(pasta:GetChildren()) do
-            if IsRare(v) then Alert(v) end
-        end
-    end
-end
-
-task.spawn(Monitor)
-print("🩴 CHINELAOHUB CARREGADO!")
+-- MONITOR
+task.spawn(function()
+	local p = workspace:FindFirstChild("Drops") or workspace:FindFirstChild("Items")
+	if p then
+		p.ChildAdded:Connect(function(c)
+			if not RadarOn then return end
+			task.wait(0.6)
+			if isRare(c) then Alert(c) end
+		end)
+	end
+end)
