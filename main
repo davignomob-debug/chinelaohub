@@ -1,11 +1,13 @@
 -- ============================================================
--- CHINELAOHUB RADAR - COM MINIMIZE E CLOSE
--- Script de detecção de itens raros com interface melhorada
+-- CHINELAOHUB RADAR - Laboratório Brainrot
+-- Script de detecção de itens raros com alertas visuais e sonoros
 -- ============================================================
 
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -15,8 +17,10 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ============================================================
 
 local CONFIG = {
+	-- Pastas onde procurar itens (tenta ambas)
 	DROP_FOLDERS = {"Drops", "Items"},
 	
+	-- Palavras-chave para itens raros (case-insensitive)
 	RARE_KEYWORDS = {
 		"mítico", "mythic",
 		"secreto", "secret",
@@ -27,15 +31,21 @@ local CONFIG = {
 		"galaxy"
 	},
 	
+	-- Cores para mutações (RGB 0-1)
 	RARE_COLORS = {
-		gold = Color3.fromRGB(255, 215, 0),
-		diamond = Color3.fromRGB(0, 255, 255),
-		gold_alt = Color3.fromRGB(255, 170, 0)
+		gold = Color3.fromRGB(255, 215, 0),      -- Ouro
+		diamond = Color3.fromRGB(0, 255, 255),  -- Ciano/Azul claro
+		gold_alt = Color3.fromRGB(255, 170, 0)  -- Ouro alternativo
 	},
 	
-	DEFAULT_AUDIO_ID = "rbxassetid://9114283110",
-	ALERT_DURATION = 10,
+	-- Configuração de áudio
+	DEFAULT_AUDIO_ID = "rbxassetid://9114283110", -- Som padrão alerta
+	ALERT_DURATION = 10, -- segundos
+	
+	-- Materiais raros
 	RARE_MATERIALS = {"Neon", "ForceField"},
+	
+	-- Tolerância de cor (distância RGB)
 	COLOR_TOLERANCE = 0.3
 }
 
@@ -45,11 +55,8 @@ local CONFIG = {
 
 local radarActive = true
 local currentAudioId = CONFIG.DEFAULT_AUDIO_ID
-local detectedItems = {}
-local activeAlerts = {}
-local screenGui = nil
-local mainFrame = nil
-local minimizedFrame = nil
+local detectedItems = {} -- Tabela para evitar detecções duplicadas
+local activeAlerts = {} -- Controlar alertas ativos
 
 -- ============================================================
 -- FUNÇÃO: Calcular distância RGB
@@ -180,13 +187,15 @@ end
 -- ============================================================
 
 local function applyHighlight(item)
+	-- Remover highlight antigo se existir
 	if item:FindFirstChild("Highlight") then
 		item:FindFirstChild("Highlight"):Destroy()
 	end
 	
+	-- Criar novo highlight
 	local highlight = Instance.new("Highlight")
-	highlight.FillColor = Color3.fromRGB(255, 0, 0)
-	highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+	highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Vermelho
+	highlight.OutlineColor = Color3.fromRGB(255, 255, 255) -- Branco
 	highlight.OutlineTransparency = 0.5
 	highlight.FillTransparency = 0.3
 	highlight.Parent = item
@@ -195,16 +204,29 @@ local function applyHighlight(item)
 end
 
 -- ============================================================
+-- FUNÇÃO: Remover Highlight
+-- ============================================================
+
+local function removeHighlight(item)
+	local highlight = item:FindFirstChild("Highlight")
+	if highlight then
+		highlight:Destroy()
+	end
+end
+
+-- ============================================================
 -- FUNÇÃO: Tocar áudio de alerta
 -- ============================================================
 
 local function playAlert()
+	-- Evitar múltiplos sons simultâneos
 	if activeAlerts[currentAudioId] then
 		return
 	end
 	
 	activeAlerts[currentAudioId] = true
 	
+	-- Criar Som no SoundService
 	local sound = Instance.new("Sound")
 	sound.SoundId = currentAudioId
 	sound.Volume = 0.5
@@ -212,6 +234,7 @@ local function playAlert()
 	
 	sound:Play()
 	
+	-- Aguardar duração configurada e remover
 	task.wait(CONFIG.ALERT_DURATION)
 	
 	sound:Destroy()
@@ -223,17 +246,22 @@ end
 -- ============================================================
 
 local function triggerAlert(item)
+	-- Evitar duplicatas
 	if detectedItems[item] then
 		return
 	end
 	
 	detectedItems[item] = true
 	
+	-- Aplicar highlight
 	applyHighlight(item)
+	
+	-- Tocar áudio (em thread separada)
 	task.spawn(playAlert)
 	
 	print("🚨 ALERTA RARO DETECTADO: " .. item.Name)
 	
+	-- Remover detecção após o item sair da esteira
 	task.spawn(function()
 		repeat
 			task.wait(1)
@@ -250,6 +278,7 @@ end
 local function monitorDropFolder()
 	local dropFolder = nil
 	
+	-- Procurar pasta (Drops ou Items)
 	for _, folderName in pairs(CONFIG.DROP_FOLDERS) do
 		dropFolder = workspace:FindFirstChild(folderName)
 		if dropFolder then
@@ -263,14 +292,17 @@ local function monitorDropFolder()
 		return
 	end
 	
+	-- Monitorar ChildAdded
 	dropFolder.ChildAdded:Connect(function(item)
 		if not radarActive then return end
 		
+		-- Delay para garantir que mutações carregaram
 		task.wait(0.5)
 		
 		if isRareItem(item) then
 			triggerAlert(item)
 		else
+			-- Verificação periódica em caso de mutação atrasada
 			task.spawn(function()
 				for i = 1, 5 do
 					task.wait(0.3)
@@ -285,17 +317,17 @@ local function monitorDropFolder()
 end
 
 -- ============================================================
--- GUI - CRIAR INTERFACE MELHORADA
+-- GUI - CRIAR INTERFACE
 -- ============================================================
 
 local function createGui()
 	-- Frame principal (arrastável)
-	screenGui = Instance.new("ScreenGui")
+	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "ChinelaohubRadar"
 	screenGui.ResetOnSpawn = false
 	screenGui.Parent = playerGui
 	
-	mainFrame = Instance.new("Frame")
+	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainFrame"
 	mainFrame.Size = UDim2.new(0, 350, 0, 280)
 	mainFrame.Position = UDim2.new(0, 20, 0, 100)
@@ -307,7 +339,7 @@ local function createGui()
 	-- Título
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(0, 250, 0, 40)
+	titleLabel.Size = UDim2.new(1, 0, 0, 40)
 	titleLabel.Position = UDim2.new(0, 0, 0, 0)
 	titleLabel.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -316,111 +348,7 @@ local function createGui()
 	titleLabel.Text = "🔔 CHINELAOHUB RADAR"
 	titleLabel.Parent = mainFrame
 	
-	-- ============================================================
-	-- BOTÃO MINIMIZE (Esquerda)
-	-- ============================================================
-	
-	local minimizeButton = Instance.new("TextButton")
-	minimizeButton.Name = "MinimizeButton"
-	minimizeButton.Size = UDim2.new(0, 50, 0, 40)
-	minimizeButton.Position = UDim2.new(0, 250, 0, 0)
-	minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
-	minimizeButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-	minimizeButton.TextSize = 18
-	minimizeButton.Font = Enum.Font.GothamBold
-	minimizeButton.Text = "−"
-	minimizeButton.BorderSizePixel = 0
-	minimizeButton.Parent = mainFrame
-	
-	-- ============================================================
-	-- BOTÃO CLOSE (Direita)
-	-- ============================================================
-	
-	local closeButton = Instance.new("TextButton")
-	closeButton.Name = "CloseButton"
-	closeButton.Size = UDim2.new(0, 50, 0, 40)
-	closeButton.Position = UDim2.new(0, 300, 0, 0)
-	closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	closeButton.TextSize = 20
-	closeButton.Font = Enum.Font.GothamBold
-	closeButton.Text = "✕"
-	closeButton.BorderSizePixel = 0
-	closeButton.Parent = mainFrame
-	
-	-- ============================================================
-	-- FRAME MINIMIZADO
-	-- ============================================================
-	
-	minimizedFrame = Instance.new("Frame")
-	minimizedFrame.Name = "MinimizedFrame"
-	minimizedFrame.Size = UDim2.new(0, 60, 0, 60)
-	minimizedFrame.Position = UDim2.new(0, 20, 0, 100)
-	minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-	minimizedFrame.BorderColor3 = Color3.fromRGB(255, 150, 0)
-	minimizedFrame.BorderSizePixel = 2
-	minimizedFrame.Visible = false
-	minimizedFrame.Parent = screenGui
-	
-	local minimizedButton = Instance.new("TextButton")
-	minimizedButton.Name = "MinimizedButton"
-	minimizedButton.Size = UDim2.new(1, 0, 1, 0)
-	minimizedButton.Position = UDim2.new(0, 0, 0, 0)
-	minimizedButton.BackgroundTransparency = 0
-	minimizedButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-	minimizedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	minimizedButton.TextSize = 24
-	minimizedButton.Font = Enum.Font.GothamBold
-	minimizedButton.Text = "🔔"
-	minimizedButton.BorderSizePixel = 0
-	minimizedButton.Parent = minimizedFrame
-	
-	-- Hover effect no frame minimizado
-	minimizedButton.MouseEnter:Connect(function()
-		minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 130, 0)
-	end)
-	
-	minimizedButton.MouseLeave:Connect(function()
-		minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
-	end)
-	
-	-- Drag do frame minimizado
-	local draggingMinimized = false
-	local dragStartMin = nil
-	local frameStartMin = nil
-	
-	minimizedButton.InputBegan:Connect(function(input, gameProcessed)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			-- Se for um clique simples (sem movimento), restaurar
-			draggingMinimized = true
-			dragStartMin = input.Position
-			frameStartMin = minimizedFrame.Position
-		end
-	end)
-	
-	minimizedButton.InputEnded:Connect(function(input, gameProcessed)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and draggingMinimized then
-			local delta = input.Position - dragStartMin
-			-- Se não moveu muito, é um clique
-			if math.abs(delta.X) < 5 and math.abs(delta.Y) < 5 then
-				minimizedFrame.Visible = false
-				mainFrame.Visible = true
-			end
-			draggingMinimized = false
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input, gameProcessed)
-		if draggingMinimized and input.UserInputType == Enum.UserInputType.Mouse then
-			local delta = input.Position - dragStartMin
-			minimizedFrame.Position = frameStartMin + UDim2.new(0, delta.X, 0, delta.Y)
-		end
-	end)
-	
-	-- ============================================================
-	-- DRAG DO FRAME PRINCIPAL
-	-- ============================================================
-	
+	-- Drag functionality
 	local dragging = false
 	local dragStart = nil
 	local frameStart = nil
@@ -447,23 +375,7 @@ local function createGui()
 		end
 	end)
 	
-	-- ============================================================
-	-- EVENTOS DOS BOTÕES
-	-- ============================================================
-	
-	minimizeButton.MouseButton1Click:Connect(function()
-		mainFrame.Visible = false
-		minimizedFrame.Visible = true
-	end)
-	
-	closeButton.MouseButton1Click:Connect(function()
-		screenGui:Destroy()
-	end)
-	
-	-- ============================================================
-	-- BOTÃO ON/OFF
-	-- ============================================================
-	
+	-- Botão ON/OFF
 	local toggleButton = Instance.new("TextButton")
 	toggleButton.Name = "ToggleButton"
 	toggleButton.Size = UDim2.new(0.8, 0, 0, 35)
@@ -487,10 +399,7 @@ local function createGui()
 		end
 	end)
 	
-	-- ============================================================
-	-- LABEL E TEXTBOX DE ÁUDIO
-	-- ============================================================
-	
+	-- Label para ID de áudio
 	local audioLabel = Instance.new("TextLabel")
 	audioLabel.Name = "AudioLabel"
 	audioLabel.Size = UDim2.new(1, 0, 0, 20)
@@ -503,6 +412,7 @@ local function createGui()
 	audioLabel.TextXAlignment = Enum.TextXAlignment.Left
 	audioLabel.Parent = mainFrame
 	
+	-- TextBox para ID de áudio
 	local audioBox = Instance.new("TextBox")
 	audioBox.Name = "AudioBox"
 	audioBox.Size = UDim2.new(0.8, 0, 0, 30)
@@ -520,6 +430,7 @@ local function createGui()
 		if enterPressed or audioBox.Text ~= "" then
 			local audioId = audioBox.Text
 			
+			-- Validar se é número
 			if tonumber(audioId) then
 				currentAudioId = "rbxassetid://" .. audioId
 				print("✅ ID de áudio atualizado: " .. currentAudioId)
@@ -530,10 +441,7 @@ local function createGui()
 		end
 	end)
 	
-	-- ============================================================
-	-- STATUS LABEL
-	-- ============================================================
-	
+	-- Status Label
 	local statusLabel = Instance.new("TextLabel")
 	statusLabel.Name = "StatusLabel"
 	statusLabel.Size = UDim2.new(0.9, 0, 0, 40)
@@ -546,21 +454,20 @@ local function createGui()
 	statusLabel.TextWrapped = true
 	statusLabel.Parent = mainFrame
 	
+	-- Atualizar status em tempo real
 	task.spawn(function()
-		while mainFrame and mainFrame.Parent do
+		while true do
 			task.wait(2)
 			local detectedCount = 0
 			for _ in pairs(detectedItems) do
 				detectedCount = detectedCount + 1
 			end
 			
-			if mainFrame.Visible then
-				statusLabel.Text = string.format(
-					"📊 Itens detectados: %d\n🎙️ Som: %s",
-					detectedCount,
-					"Ativo"
-				)
-			end
+			statusLabel.Text = string.format(
+				"📊 Itens detectados: %d\n🎙️ Som: %s",
+				detectedCount,
+				"Ativo"
+			)
 		end
 	end)
 	
@@ -574,11 +481,15 @@ end
 local function initialize()
 	print("🚀 Inicializando CHINELAOHUB RADAR...")
 	
+	-- Criar GUI
 	createGui()
+	
+	-- Monitorar drops
 	monitorDropFolder()
 	
 	print("✅ RADAR PRONTO PARA USAR!")
 end
 
+-- Aguardar carregamento do jogo
 task.wait(1)
 initialize()
