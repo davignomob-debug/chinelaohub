@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELAOHUB - TECH PERFECT UI EDITION
-    - Sidebar na esquerda com Tabs
-    - Estilo Neon Green & Charcoal Dark
-    - Funcionalidades: Radar & Server Premium
+    🩴 CHINELAOHUB - CHILLI STYLE EDITION
+    - Layout: Sidebar Lateral (Tech Perfect)
+    - Visual: Deep Sea Gradient & Glow (Chilli Hub)
+    - Abas: Radar & Servers
 ]]
 
 local Players = game:GetService("Players")
@@ -13,7 +13,7 @@ local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Função para UI Protegida
+-- [[ FUNÇÃO PARA UI PROTEGIDA ]] --
 local function GetSafeGui()
     if gethui then return gethui() end
     if CoreGui then return CoreGui end
@@ -22,92 +22,108 @@ end
 
 local parentGui = GetSafeGui()
 
--- Configurações de Estado
-local RadarActive = true
-local CurrentID = "9114283110"
+-- [[ PALETA DE CORES CHILLI HUB ]] --
+local COLORS = {
+    BG = Color3.fromRGB(16, 24, 39),
+    GRAD_1 = Color3.fromRGB(12, 18, 32),
+    GRAD_2 = Color3.fromRGB(21, 30, 47),
+    GRAD_3 = Color3.fromRGB(10, 82, 120),
+    STROKE_MAIN = Color3.fromRGB(56, 189, 248),
+    TEXT = Color3.fromRGB(241, 245, 249),
+    ACCENT = Color3.fromRGB(34, 211, 238),
+    BTN_SIDE = Color3.fromRGB(30, 41, 59)
+}
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoHub_TechPerfect"
+sg.Name = "ChinelaoHub_ChilliStyle"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- Frame de Fundo (Main)
+-- FRAME PRINCIPAL (CARD)
 local Main = Instance.new("Frame", sg)
 Main.Size = UDim2.fromOffset(550, 350)
 Main.Position = UDim2.new(0.5, -275, 0.5, -175)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Main.BackgroundColor3 = COLORS.BG
 Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 20)
 
--- Borda Neon Verde (conforme a print)
-local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Thickness = 2
-MainStroke.Color = Color3.fromRGB(0, 255, 0)
-MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+-- Gradiente de Fundo Estilo Chilli
+local BgGrad = Instance.new("UIGradient", Main)
+BgGrad.Rotation = 35
+BgGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, COLORS.GRAD_1),
+    ColorSequenceKeypoint.new(0.55, COLORS.GRAD_2),
+    ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
+})
 
--- [[ SIDEBAR (Lateral Esquerda) ]] --
+-- Borda com Brilho (Stroke)
+local Glow = Instance.new("UIStroke", Main)
+Glow.Thickness = 2
+Glow.Color = COLORS.STROKE_MAIN
+Glow.Transparency = 0.2
+
+-- [[ SIDEBAR LATERAL ]] --
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 150, 1, -40)
-Sidebar.Position = UDim2.new(0, 10, 0, 35)
+Sidebar.Size = UDim2.new(0, 140, 1, -60)
+Sidebar.Position = UDim2.new(0, 15, 0, 45)
 Sidebar.BackgroundTransparency = 1
 
 local UIList = Instance.new("UIListLayout", Sidebar)
-UIList.Padding = UDim.new(0, 8)
+UIList.Padding = UDim.new(0, 10)
 
--- Botões da Sidebar
 local function createTabBtn(name)
     local btn = Instance.new("TextButton", Sidebar)
-    btn.Size = UDim2.new(1, 0, 0, 35)
-    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.BackgroundColor3 = COLORS.BTN_SIDE
     btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 14
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.TextColor3 = COLORS.TEXT
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    
+    local s = Instance.new("UIStroke", btn)
+    s.Thickness = 1
+    s.Color = COLORS.STROKE_MAIN
+    s.Transparency = 0.6
+    
     return btn
 end
 
-local btnRadar = createTabBtn("Radar")
-local btnServers = createTabBtn("Servers")
+local btnRadar = createTabBtn("RADAR")
+local btnServers = createTabBtn("SERVERS")
 
--- [[ ÁREA DE CONTEÚDO (Direita) ]] --
+-- [[ CONTAINER DE CONTEÚDO ]] --
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -180, 1, -50)
-Container.Position = UDim2.new(0, 170, 0, 40)
+Container.Size = UDim2.new(1, -185, 1, -60)
+Container.Position = UDim2.new(0, 170, 0, 45)
 Container.BackgroundTransparency = 1
 
--- Página 1: RADAR
+-- PÁGINA RADAR
 local PageRadar = Instance.new("Frame", Container)
 PageRadar.Size = UDim2.new(1, 0, 1, 0)
 PageRadar.BackgroundTransparency = 1
-PageRadar.Visible = true
 
 local RadarToggle = Instance.new("TextButton", PageRadar)
-RadarToggle.Size = UDim2.new(1, 0, 0, 45)
-RadarToggle.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-RadarToggle.Text = "RADAR STATUS: ACTIVE"
-RadarToggle.Font = Enum.Font.GothamBold
-RadarToggle.TextColor3 = Color3.fromRGB(0, 0, 0)
-Instance.new("UICorner", RadarToggle)
-
-local IdLabel = Instance.new("TextLabel", PageRadar)
-IdLabel.Size = UDim2.new(1, 0, 0, 20)
-IdLabel.Position = UDim2.new(0, 0, 0, 55)
-IdLabel.Text = "ALARM ID CONFIG:"
-IdLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-IdLabel.BackgroundTransparency = 1
-IdLabel.TextXAlignment = Enum.TextXAlignment.Left
+RadarToggle.Size = UDim2.new(1, 0, 0, 50)
+RadarToggle.BackgroundColor3 = COLORS.ACCENT
+RadarToggle.Text = "RADAR: ACTIVE"
+RadarToggle.Font = Enum.Font.GothamBlack
+RadarToggle.TextColor3 = COLORS.BG
+Instance.new("UICorner", RadarToggle).CornerRadius = UDim.new(0, 12)
 
 local IdBox = Instance.new("TextBox", PageRadar)
-IdBox.Size = UDim2.new(1, 0, 0, 40)
-IdBox.Position = UDim2.new(0, 0, 0, 80)
-IdBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-IdBox.Text = CurrentID
-IdBox.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", IdBox)
+IdBox.Size = UDim2.new(1, 0, 0, 45)
+IdBox.Position = UDim2.new(0, 0, 0, 65)
+IdBox.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
+IdBox.Text = "9114283110"
+IdBox.PlaceholderText = "ALARM ID"
+IdBox.TextColor3 = COLORS.TEXT
+IdBox.Font = Enum.Font.Code
+Instance.new("UICorner", IdBox).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", IdBox).Color = COLORS.STROKE_MAIN
 
--- Página 2: SERVERS
+-- PÁGINA SERVERS
 local PageServers = Instance.new("Frame", Container)
 PageServers.Size = UDim2.new(1, 0, 1, 0)
 PageServers.BackgroundTransparency = 1
@@ -115,46 +131,34 @@ PageServers.Visible = false
 
 local bGen = Instance.new("TextButton", PageServers)
 bGen.Size = UDim2.new(1, 0, 0, 50)
-bGen.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+bGen.BackgroundColor3 = Color3.fromRGB(140, 225, 0) -- Mantive o verde premium pra destacar
 bGen.Text = "SERVER PREMIUM (HOP)"
-bGen.TextColor3 = Color3.fromRGB(140, 225, 0)
-bGen.Font = Enum.Font.GothamBold
-Instance.new("UICorner", bGen)
-local bStroke = Instance.new("UIStroke", bGen)
-bStroke.Color = Color3.fromRGB(140, 225, 0)
+bGen.Font = Enum.Font.GothamBlack
+bGen.TextColor3 = Color3.fromRGB(16, 24, 39)
+Instance.new("UICorner", bGen).CornerRadius = UDim.new(0, 12)
 
--- [[ CABEÇALHO (Header) ]] --
-local Header = Instance.new("Frame", Main)
-Header.Size = UDim2.new(1, 0, 0, 30)
-Header.BackgroundTransparency = 1
-
-local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(0, 200, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "Tech Perfect | ChinelaoHub"
-Title.TextColor3 = Color3.fromRGB(0, 255, 0)
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.BackgroundTransparency = 1
-
--- [[ LÓGICA DE TROCA DE ABAS ]] --
+-- [[ LÓGICA DE ABAS ]] --
 btnRadar.MouseButton1Click:Connect(function()
     PageRadar.Visible = true
     PageServers.Visible = false
-    btnRadar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    btnServers.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btnRadar.BackgroundColor3 = COLORS.ACCENT
+    btnRadar.TextColor3 = COLORS.BG
+    btnServers.BackgroundColor3 = COLORS.BTN_SIDE
+    btnServers.TextColor3 = COLORS.TEXT
 end)
 
 btnServers.MouseButton1Click:Connect(function()
     PageRadar.Visible = false
     PageServers.Visible = true
-    btnServers.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    btnRadar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    btnServers.BackgroundColor3 = COLORS.ACCENT
+    btnServers.TextColor3 = COLORS.BG
+    btnRadar.BackgroundColor3 = COLORS.BTN_SIDE
+    btnRadar.TextColor3 = COLORS.TEXT
 end)
 
 -- [[ LÓGICA SERVER PREMIUM ]] --
 bGen.MouseButton1Click:Connect(function()
-    bGen.Text = "Searching Server..."
+    bGen.Text = "SEARCHING..."
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
@@ -165,12 +169,28 @@ bGen.MouseButton1Click:Connect(function()
                 break
             end
         end
-    else
-        bGen.Text = "Error! Click again."
     end
 end)
 
--- Draggable (Arrastar)
+-- [[ TÍTULO E FECHAR ]] --
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, -40, 0, 35)
+Title.Position = UDim2.new(0, 20, 0, 5)
+Title.Text = "CHINELAOHUB // CHILLI EDITION"
+Title.TextColor3 = COLORS.TEXT
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.BackgroundTransparency = 1
+
+local CloseBtn = Instance.new("TextButton", Main)
+CloseBtn.Size = UDim2.fromOffset(30, 30)
+CloseBtn.Position = UDim2.new(1, -40, 0, 10)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.new(1,0,0)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- Arrastar (Draggable)
 local function drag()
     local dragging, dragInput, dragStart, startPos
     Main.InputBegan:Connect(function(input)
@@ -191,14 +211,3 @@ local function drag()
     end)
 end
 drag()
-
--- Botão de Fechar
-local close = Instance.new("TextButton", Main)
-close.Size = UDim2.fromOffset(30, 30)
-close.Position = UDim2.new(1, -35, 0, 5)
-close.Text = "X"
-close.TextColor3 = Color3.new(1,0,0)
-close.BackgroundTransparency = 1
-close.MouseButton1Click:Connect(function() sg:Destroy() end)
-
-print("🩴 CHINELAOHUB TECH PERFECT STYLE LOADED!")
