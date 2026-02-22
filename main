@@ -1,14 +1,13 @@
 --[[ 
-    🩴 CHINELAOHUB - CHILLI STYLE EDITION
-    - Layout: Sidebar Lateral (Tech Perfect)
-    - Visual: Deep Sea Gradient & Glow (Chilli Hub)
-    - Abas: Radar & Servers
+    🩴 CHINELAOHUB - CHILLI STYLE + FLY EDITION
+    - Layout: Sidebar Lateral
+    - Visual: Chilli Hub Deep Sea
+    - Abas: Radar, Servers e Fly
 ]]
 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
-local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
@@ -36,11 +35,10 @@ local COLORS = {
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoHub_ChilliStyle"
+sg.Name = "ChinelaoHub_FlyEdition"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- FRAME PRINCIPAL (CARD)
 local Main = Instance.new("Frame", sg)
 Main.Size = UDim2.fromOffset(550, 350)
 Main.Position = UDim2.new(0.5, -275, 0.5, -175)
@@ -48,7 +46,6 @@ Main.BackgroundColor3 = COLORS.BG
 Main.BorderSizePixel = 0
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 20)
 
--- Gradiente de Fundo Estilo Chilli
 local BgGrad = Instance.new("UIGradient", Main)
 BgGrad.Rotation = 35
 BgGrad.Color = ColorSequence.new({
@@ -57,7 +54,6 @@ BgGrad.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
 })
 
--- Borda com Brilho (Stroke)
 local Glow = Instance.new("UIStroke", Main)
 Glow.Thickness = 2
 Glow.Color = COLORS.STROKE_MAIN
@@ -70,28 +66,24 @@ Sidebar.Position = UDim2.new(0, 15, 0, 45)
 Sidebar.BackgroundTransparency = 1
 
 local UIList = Instance.new("UIListLayout", Sidebar)
-UIList.Padding = UDim.new(0, 10)
+UIList.Padding = UDim.new(0, 8)
 
 local function createTabBtn(name)
     local btn = Instance.new("TextButton", Sidebar)
-    btn.Size = UDim2.new(1, 0, 0, 40)
+    btn.Size = UDim2.new(1, 0, 0, 35)
     btn.BackgroundColor3 = COLORS.BTN_SIDE
     btn.Text = name
     btn.TextColor3 = COLORS.TEXT
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 13
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
-    
-    local s = Instance.new("UIStroke", btn)
-    s.Thickness = 1
-    s.Color = COLORS.STROKE_MAIN
-    s.Transparency = 0.6
-    
+    btn.TextSize = 12
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    Instance.new("UIStroke", btn).Color = COLORS.STROKE_MAIN
     return btn
 end
 
 local btnRadar = createTabBtn("RADAR")
 local btnServers = createTabBtn("SERVERS")
+local btnFly = createTabBtn("FLY")
 
 -- [[ CONTAINER DE CONTEÚDO ]] --
 local Container = Instance.new("Frame", Main)
@@ -99,84 +91,83 @@ Container.Size = UDim2.new(1, -185, 1, -60)
 Container.Position = UDim2.new(0, 170, 0, 45)
 Container.BackgroundTransparency = 1
 
--- PÁGINA RADAR
-local PageRadar = Instance.new("Frame", Container)
-PageRadar.Size = UDim2.new(1, 0, 1, 0)
-PageRadar.BackgroundTransparency = 1
+-- PÁGINAS
+local function createPage()
+    local p = Instance.new("Frame", Container)
+    p.Size = UDim2.new(1, 0, 1, 0)
+    p.BackgroundTransparency = 1
+    p.Visible = false
+    return p
+end
 
-local RadarToggle = Instance.new("TextButton", PageRadar)
-RadarToggle.Size = UDim2.new(1, 0, 0, 50)
-RadarToggle.BackgroundColor3 = COLORS.ACCENT
-RadarToggle.Text = "RADAR: ACTIVE"
-RadarToggle.Font = Enum.Font.GothamBlack
-RadarToggle.TextColor3 = COLORS.BG
-Instance.new("UICorner", RadarToggle).CornerRadius = UDim.new(0, 12)
+local PageRadar = createPage()
+PageRadar.Visible = true
+local PageServers = createPage()
+local PageFly = createPage()
 
-local IdBox = Instance.new("TextBox", PageRadar)
-IdBox.Size = UDim2.new(1, 0, 0, 45)
-IdBox.Position = UDim2.new(0, 0, 0, 65)
-IdBox.BackgroundColor3 = Color3.fromRGB(25, 32, 48)
-IdBox.Text = "9114283110"
-IdBox.PlaceholderText = "ALARM ID"
-IdBox.TextColor3 = COLORS.TEXT
-IdBox.Font = Enum.Font.Code
-Instance.new("UICorner", IdBox).CornerRadius = UDim.new(0, 10)
-Instance.new("UIStroke", IdBox).Color = COLORS.STROKE_MAIN
+-- [[ CONTEÚDO FLY ]] --
+local FlyBtn = Instance.new("TextButton", PageFly)
+FlyBtn.Size = UDim2.new(1, 0, 0, 50)
+FlyBtn.BackgroundColor3 = COLORS.ACCENT
+FlyBtn.Text = "LOAD FLY GUI V3"
+FlyBtn.Font = Enum.Font.GothamBlack
+FlyBtn.TextColor3 = COLORS.BG
+Instance.new("UICorner", FlyBtn).CornerRadius = UDim.new(0, 12)
 
--- PÁGINA SERVERS
-local PageServers = Instance.new("Frame", Container)
-PageServers.Size = UDim2.new(1, 0, 1, 0)
-PageServers.BackgroundTransparency = 1
-PageServers.Visible = false
+FlyBtn.MouseButton1Click:Connect(function()
+    FlyBtn.Text = "LOADING..."
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.lua"))()
+    FlyBtn.Text = "FLY LOADED!"
+    task.wait(2)
+    FlyBtn.Text = "LOAD FLY GUI V3"
+end)
 
+-- [[ CONTEÚDO SERVERS ]] --
 local bGen = Instance.new("TextButton", PageServers)
 bGen.Size = UDim2.new(1, 0, 0, 50)
-bGen.BackgroundColor3 = Color3.fromRGB(140, 225, 0) -- Mantive o verde premium pra destacar
+bGen.BackgroundColor3 = Color3.fromRGB(140, 225, 0)
 bGen.Text = "SERVER PREMIUM (HOP)"
 bGen.Font = Enum.Font.GothamBlack
-bGen.TextColor3 = Color3.fromRGB(16, 24, 39)
+bGen.TextColor3 = COLORS.BG
 Instance.new("UICorner", bGen).CornerRadius = UDim.new(0, 12)
 
--- [[ LÓGICA DE ABAS ]] --
-btnRadar.MouseButton1Click:Connect(function()
-    PageRadar.Visible = true
-    PageServers.Visible = false
-    btnRadar.BackgroundColor3 = COLORS.ACCENT
-    btnRadar.TextColor3 = COLORS.BG
-    btnServers.BackgroundColor3 = COLORS.BTN_SIDE
-    btnServers.TextColor3 = COLORS.TEXT
-end)
-
-btnServers.MouseButton1Click:Connect(function()
-    PageRadar.Visible = false
-    PageServers.Visible = true
-    btnServers.BackgroundColor3 = COLORS.ACCENT
-    btnServers.TextColor3 = COLORS.BG
-    btnRadar.BackgroundColor3 = COLORS.BTN_SIDE
-    btnRadar.TextColor3 = COLORS.TEXT
-end)
-
--- [[ LÓGICA SERVER PREMIUM ]] --
 bGen.MouseButton1Click:Connect(function()
-    bGen.Text = "SEARCHING..."
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
     if success and result.data then
-        for _, server in ipairs(result.data) do
-            if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
+        for _, s in ipairs(result.data) do
+            if s.playing < s.maxPlayers and s.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id)
                 break
             end
         end
     end
 end)
 
--- [[ TÍTULO E FECHAR ]] --
+-- [[ LÓGICA DE TROCA DE ABAS ]] --
+local function showPage(page, btn)
+    PageRadar.Visible = false
+    PageServers.Visible = false
+    PageFly.Visible = false
+    
+    btnRadar.BackgroundColor3 = COLORS.BTN_SIDE
+    btnServers.BackgroundColor3 = COLORS.BTN_SIDE
+    btnFly.BackgroundColor3 = COLORS.BTN_SIDE
+    
+    page.Visible = true
+    btn.BackgroundColor3 = COLORS.ACCENT
+end
+
+btnRadar.MouseButton1Click:Connect(function() showPage(PageRadar, btnRadar) end)
+btnServers.MouseButton1Click:Connect(function() showPage(PageServers, btnServers) end)
+btnFly.MouseButton1Click:Connect(function() showPage(PageFly, btnFly) end)
+
+-- TÍTULO E FECHAR
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, -40, 0, 35)
 Title.Position = UDim2.new(0, 20, 0, 5)
-Title.Text = "CHINELAOHUB // CHILLI EDITION"
+Title.Text = "CHINELAOHUB // FLY EDITION"
 Title.TextColor3 = COLORS.TEXT
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -190,24 +181,26 @@ CloseBtn.TextColor3 = Color3.new(1,0,0)
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- Arrastar (Draggable)
-local function drag()
+-- Draggable
+local function drag(frame)
     local dragging, dragInput, dragStart, startPos
-    Main.InputBegan:Connect(function(input)
+    frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = Main.Position
+            startPos = frame.Position
         end
     end)
-    Main.InputChanged:Connect(function(input)
+    frame.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
     game:GetService("UserInputService").InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
 end
-drag()
+drag(Main)
+
+print("🩴 CHINELAOHUB: FLY TAB & CHILLI STYLE LOADED!")
