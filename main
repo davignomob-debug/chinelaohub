@@ -1,5 +1,5 @@
 -- ============================================================
--- CHINELAOHUB RADAR - COM MINIMIZE, CLOSE E DRAG TOTAL
+-- CHINELAOHUB RADAR - COM MINIMIZE, CLOSE E DRAG TOTAL (CORRIGIDO)
 -- Script de detecção de itens raros com interface totalmente arrastável
 -- ============================================================
 
@@ -52,18 +52,10 @@ local mainFrame = nil
 local minimizedFrame = nil
 
 -- Estado do drag
-local dragData = {
-	mainFrame = {
-		dragging = false,
-		dragStart = nil,
-		frameStart = nil
-	},
-	minimizedFrame = {
-		dragging = false,
-		dragStart = nil,
-		frameStart = nil
-	}
-}
+local dragging = false
+local draggedFrame = nil
+local dragStart = nil
+local frameStart = nil
 
 -- ============================================================
 -- FUNÇÃO: Calcular distância RGB
@@ -299,41 +291,42 @@ end
 -- FUNÇÃO: Configurar drag para um frame
 -- ============================================================
 
-local function setupDrag(frame, dragArea)
-	dragArea = dragArea or frame
-	
-	-- Identificar qual frame está sendo arrastado
-	local frameKey = frame.Name
-	
-	dragArea.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragData[frameKey].dragging = true
-			dragData[frameKey].dragStart = input.Position
-			dragData[frameKey].frameStart = frame.Position
-		end
-	end)
-	
-	dragArea.InputEnded:Connect(function(input, gameProcessed)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragData[frameKey].dragging = false
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input, gameProcessed)
-		if dragData[frameKey].dragging and input.UserInputType == Enum.UserInputType.Mouse then
-			local delta = input.Position - dragData[frameKey].dragStart
-			frame.Position = dragData[frameKey].frameStart + UDim2.new(0, delta.X, 0, delta.Y)
-		end
+local function setupDrag(dragArea, targetFrame)
+	dragArea.MouseButton1Down:Connect(function()
+		dragging = true
+		draggedFrame = targetFrame
+		dragStart = UserInputService:GetMouseLocation()
+		frameStart = targetFrame.Position
+		print("🔄 Iniciando drag de: " .. targetFrame.Name)
 	end)
 end
+
+-- ============================================================
+-- INPUT SERVICE - DRAG GLOBAL
+-- ============================================================
+
+UserInputService.InputChanged:Connect(function(input, gameProcessed)
+	if dragging and input.UserInputType == Enum.UserInputType.Mouse and draggedFrame then
+		local mousePos = UserInputService:GetMouseLocation()
+		local delta = mousePos - dragStart
+		draggedFrame.Position = frameStart + UDim2.new(0, delta.X, 0, delta.Y)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = false
+		draggedFrame = nil
+		print("✅ Drag finalizado")
+	end
+end)
 
 -- ============================================================
 -- GUI - CRIAR INTERFACE MELHORADA
 -- ============================================================
 
 local function createGui()
-	-- Frame principal (arrastável)
+	-- Frame principal
 	screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "ChinelaohubRadar"
 	screenGui.ResetOnSpawn = false
@@ -360,8 +353,8 @@ local function createGui()
 	titleLabel.Text = "🔔 CHINELAOHUB RADAR"
 	titleLabel.Parent = mainFrame
 	
-	-- Configurar drag do título para o painel todo
-	setupDrag(mainFrame, titleLabel)
+	-- Configurar drag do título
+	setupDrag(titleLabel, mainFrame)
 	
 	-- ============================================================
 	-- BOTÃO MINIMIZE (Esquerda)
@@ -450,7 +443,7 @@ local function createGui()
 	end)
 	
 	-- Configurar drag do frame minimizado
-	setupDrag(minimizedFrame, minimizedFrame)
+	setupDrag(minimizedButton, minimizedFrame)
 	
 	-- Clique no frame minimizado para restaurar
 	minimizedButton.MouseButton1Click:Connect(function()
