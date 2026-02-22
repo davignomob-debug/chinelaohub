@@ -1,6 +1,6 @@
 -- ============================================================
--- CHINELAOHUB RADAR - COM MINIMIZE E CLOSE
--- Script de detecção de itens raros com interface melhorada
+-- CHINELAOHUB RADAR - COM MINIMIZE, CLOSE E DRAG TOTAL
+-- Script de detecção de itens raros com interface totalmente arrastável
 -- ============================================================
 
 local UserInputService = game:GetService("UserInputService")
@@ -50,6 +50,20 @@ local activeAlerts = {}
 local screenGui = nil
 local mainFrame = nil
 local minimizedFrame = nil
+
+-- Estado do drag
+local dragData = {
+	mainFrame = {
+		dragging = false,
+		dragStart = nil,
+		frameStart = nil
+	},
+	minimizedFrame = {
+		dragging = false,
+		dragStart = nil,
+		frameStart = nil
+	}
+}
 
 -- ============================================================
 -- FUNÇÃO: Calcular distância RGB
@@ -157,17 +171,14 @@ end
 local function isRareItem(item)
 	if not item then return false end
 	
-	-- Verificação 1: Nome do objeto
 	if containsRareKeyword(item.Name) then
 		return true
 	end
 	
-	-- Verificação 2: BillboardGui / TextLabel
 	if checkBillboardGui(item) then
 		return true
 	end
 	
-	-- Verificação 3: Mutações visuais (Neon/ForceField + Cor)
 	if detectMutation(item) then
 		return true
 	end
@@ -285,6 +296,39 @@ local function monitorDropFolder()
 end
 
 -- ============================================================
+-- FUNÇÃO: Configurar drag para um frame
+-- ============================================================
+
+local function setupDrag(frame, dragArea)
+	dragArea = dragArea or frame
+	
+	-- Identificar qual frame está sendo arrastado
+	local frameKey = frame.Name
+	
+	dragArea.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragData[frameKey].dragging = true
+			dragData[frameKey].dragStart = input.Position
+			dragData[frameKey].frameStart = frame.Position
+		end
+	end)
+	
+	dragArea.InputEnded:Connect(function(input, gameProcessed)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragData[frameKey].dragging = false
+		end
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input, gameProcessed)
+		if dragData[frameKey].dragging and input.UserInputType == Enum.UserInputType.Mouse then
+			local delta = input.Position - dragData[frameKey].dragStart
+			frame.Position = dragData[frameKey].frameStart + UDim2.new(0, delta.X, 0, delta.Y)
+		end
+	end)
+end
+
+-- ============================================================
 -- GUI - CRIAR INTERFACE MELHORADA
 -- ============================================================
 
@@ -304,7 +348,7 @@ local function createGui()
 	mainFrame.BorderSizePixel = 2
 	mainFrame.Parent = screenGui
 	
-	-- Título
+	-- Título (Arrastável)
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
 	titleLabel.Size = UDim2.new(0, 250, 0, 40)
@@ -315,6 +359,9 @@ local function createGui()
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.Text = "🔔 CHINELAOHUB RADAR"
 	titleLabel.Parent = mainFrame
+	
+	-- Configurar drag do título para o painel todo
+	setupDrag(mainFrame, titleLabel)
 	
 	-- ============================================================
 	-- BOTÃO MINIMIZE (Esquerda)
@@ -332,6 +379,15 @@ local function createGui()
 	minimizeButton.BorderSizePixel = 0
 	minimizeButton.Parent = mainFrame
 	
+	-- Hover effect
+	minimizeButton.MouseEnter:Connect(function()
+		minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 220, 50)
+	end)
+	
+	minimizeButton.MouseLeave:Connect(function()
+		minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+	end)
+	
 	-- ============================================================
 	-- BOTÃO CLOSE (Direita)
 	-- ============================================================
@@ -348,8 +404,17 @@ local function createGui()
 	closeButton.BorderSizePixel = 0
 	closeButton.Parent = mainFrame
 	
+	-- Hover effect
+	closeButton.MouseEnter:Connect(function()
+		closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+	end)
+	
+	closeButton.MouseLeave:Connect(function()
+		closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	end)
+	
 	-- ============================================================
-	-- FRAME MINIMIZADO
+	-- FRAME MINIMIZADO (ARRASTÁVEL)
 	-- ============================================================
 	
 	minimizedFrame = Instance.new("Frame")
@@ -369,7 +434,7 @@ local function createGui()
 	minimizedButton.BackgroundTransparency = 0
 	minimizedButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	minimizedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	minimizedButton.TextSize = 24
+	minimizedButton.TextSize = 28
 	minimizedButton.Font = Enum.Font.GothamBold
 	minimizedButton.Text = "🔔"
 	minimizedButton.BorderSizePixel = 0
@@ -384,71 +449,17 @@ local function createGui()
 		minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	end)
 	
-	-- Drag do frame minimizado
-	local draggingMinimized = false
-	local dragStartMin = nil
-	local frameStartMin = nil
+	-- Configurar drag do frame minimizado
+	setupDrag(minimizedFrame, minimizedFrame)
 	
-	minimizedButton.InputBegan:Connect(function(input, gameProcessed)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			-- Se for um clique simples (sem movimento), restaurar
-			draggingMinimized = true
-			dragStartMin = input.Position
-			frameStartMin = minimizedFrame.Position
-		end
-	end)
-	
-	minimizedButton.InputEnded:Connect(function(input, gameProcessed)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 and draggingMinimized then
-			local delta = input.Position - dragStartMin
-			-- Se não moveu muito, é um clique
-			if math.abs(delta.X) < 5 and math.abs(delta.Y) < 5 then
-				minimizedFrame.Visible = false
-				mainFrame.Visible = true
-			end
-			draggingMinimized = false
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input, gameProcessed)
-		if draggingMinimized and input.UserInputType == Enum.UserInputType.Mouse then
-			local delta = input.Position - dragStartMin
-			minimizedFrame.Position = frameStartMin + UDim2.new(0, delta.X, 0, delta.Y)
-		end
+	-- Clique no frame minimizado para restaurar
+	minimizedButton.MouseButton1Click:Connect(function()
+		minimizedFrame.Visible = false
+		mainFrame.Visible = true
 	end)
 	
 	-- ============================================================
-	-- DRAG DO FRAME PRINCIPAL
-	-- ============================================================
-	
-	local dragging = false
-	local dragStart = nil
-	local frameStart = nil
-	
-	titleLabel.InputBegan:Connect(function(input, gameProcessed)
-		if gameProcessed then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			frameStart = mainFrame.Position
-		end
-	end)
-	
-	UserInputService.InputChanged:Connect(function(input, gameProcessed)
-		if dragging and input.UserInputType == Enum.UserInputType.Mouse then
-			local delta = input.Position - dragStart
-			mainFrame.Position = frameStart + UDim2.new(0, delta.X, 0, delta.Y)
-		end
-	end)
-	
-	UserInputService.InputEnded:Connect(function(input, gameProcessed)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
-		end
-	end)
-	
-	-- ============================================================
-	-- EVENTOS DOS BOTÕES
+	-- EVENTOS DOS BOTÕES DO PAINEL PRINCIPAL
 	-- ============================================================
 	
 	minimizeButton.MouseButton1Click:Connect(function()
