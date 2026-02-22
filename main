@@ -1,12 +1,11 @@
 -- ============================================================
--- CHINELAOHUB RADAR - VERSÃO PC OTIMIZADA
+-- CHINELAOHUB RADAR - VERSÃO PC (DRAG FUNCIONANDO)
 -- Script de detecção de itens raros com interface profissional para PC
 -- ============================================================
 
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -289,38 +288,6 @@ local function monitorDropFolder()
 end
 
 -- ============================================================
--- FUNÇÃO: Configurar drag para um frame
--- ============================================================
-
-local function setupDrag(dragArea, targetFrame)
-	dragArea.MouseButton1Down:Connect(function()
-		dragging = true
-		draggedFrame = targetFrame
-		dragStart = UserInputService:GetMouseLocation()
-		frameStart = targetFrame.Position
-	end)
-end
-
--- ============================================================
--- INPUT SERVICE - DRAG GLOBAL
--- ============================================================
-
-UserInputService.InputChanged:Connect(function(input, gameProcessed)
-	if dragging and input.UserInputType == Enum.UserInputType.Mouse and draggedFrame then
-		local mousePos = UserInputService:GetMouseLocation()
-		local delta = mousePos - dragStart
-		draggedFrame.Position = frameStart + UDim2.new(0, delta.X, 0, delta.Y)
-	end
-end)
-
-UserInputService.InputEnded:Connect(function(input, gameProcessed)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-		draggedFrame = nil
-	end
-end)
-
--- ============================================================
 -- GUI - CRIAR INTERFACE PARA PC
 -- ============================================================
 
@@ -337,17 +304,12 @@ local function createGui()
 	
 	mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainFrame"
-	mainFrame.Size = UDim2.new(0, 380, 0, 320)
+	mainFrame.Size = UDim2.new(0, 350, 0, 280)
 	mainFrame.Position = UDim2.new(0, 20, 0, 100)
-	mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 	mainFrame.BorderColor3 = Color3.fromRGB(255, 100, 0)
-	mainFrame.BorderSizePixel = 3
+	mainFrame.BorderSizePixel = 2
 	mainFrame.Parent = screenGui
-	
-	-- Canto arredondado (simulado com BorderRadius no futuro)
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 10)
-	corner.Parent = mainFrame
 	
 	-- ============================================================
 	-- TÍTULO (Arrastável)
@@ -355,22 +317,39 @@ local function createGui()
 	
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(0, 280, 0, 45)
+	titleLabel.Size = UDim2.new(0, 250, 0, 40)
 	titleLabel.Position = UDim2.new(0, 0, 0, 0)
 	titleLabel.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	titleLabel.TextSize = 16
+	titleLabel.TextSize = 18
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.Text = "🔔 CHINELAOHUB RADAR"
-	titleLabel.BorderSizePixel = 0
 	titleLabel.Parent = mainFrame
 	
-	local titleCorner = Instance.new("UICorner")
-	titleCorner.CornerRadius = UDim.new(0, 10)
-	titleCorner.Parent = titleLabel
+	-- DRAG DO TÍTULO
+	local draggingTitle = false
+	local dragStartTitle = nil
+	local frameStartTitle = nil
 	
-	-- Configurar drag
-	setupDrag(titleLabel, mainFrame)
+	titleLabel.MouseButton1Down:Connect(function()
+		draggingTitle = true
+		dragStartTitle = UserInputService:GetMouseLocation()
+		frameStartTitle = mainFrame.Position
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input, gameProcessed)
+		if draggingTitle and input.UserInputType == Enum.UserInputType.Mouse then
+			local mousePos = UserInputService:GetMouseLocation()
+			local delta = mousePos - dragStartTitle
+			mainFrame.Position = frameStartTitle + UDim2.new(0, delta.X, 0, delta.Y)
+		end
+	end)
+	
+	UserInputService.InputEnded:Connect(function(input, gameProcessed)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			draggingTitle = false
+		end
+	end)
 	
 	-- ============================================================
 	-- BOTÃO MINIMIZE
@@ -378,8 +357,8 @@ local function createGui()
 	
 	local minimizeButton = Instance.new("TextButton")
 	minimizeButton.Name = "MinimizeButton"
-	minimizeButton.Size = UDim2.new(0, 50, 0, 45)
-	minimizeButton.Position = UDim2.new(0, 280, 0, 0)
+	minimizeButton.Size = UDim2.new(0, 50, 0, 40)
+	minimizeButton.Position = UDim2.new(0, 250, 0, 0)
 	minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
 	minimizeButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 	minimizeButton.TextSize = 18
@@ -388,9 +367,8 @@ local function createGui()
 	minimizeButton.BorderSizePixel = 0
 	minimizeButton.Parent = mainFrame
 	
-	-- Hover effect
 	minimizeButton.MouseEnter:Connect(function()
-		minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 220, 80)
+		minimizeButton.BackgroundColor3 = Color3.fromRGB(255, 220, 50)
 	end)
 	
 	minimizeButton.MouseLeave:Connect(function()
@@ -403,8 +381,8 @@ local function createGui()
 	
 	local closeButton = Instance.new("TextButton")
 	closeButton.Name = "CloseButton"
-	closeButton.Size = UDim2.new(0, 50, 0, 45)
-	closeButton.Position = UDim2.new(0, 330, 0, 0)
+	closeButton.Size = UDim2.new(0, 50, 0, 40)
+	closeButton.Position = UDim2.new(0, 300, 0, 0)
 	closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 	closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 	closeButton.TextSize = 20
@@ -413,7 +391,6 @@ local function createGui()
 	closeButton.BorderSizePixel = 0
 	closeButton.Parent = mainFrame
 	
-	-- Hover effect
 	closeButton.MouseEnter:Connect(function()
 		closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 	end)
@@ -428,36 +405,14 @@ local function createGui()
 	
 	local toggleButton = Instance.new("TextButton")
 	toggleButton.Name = "ToggleButton"
-	toggleButton.Size = UDim2.new(0.85, 0, 0, 40)
-	toggleButton.Position = UDim2.new(0.075, 0, 0, 55)
+	toggleButton.Size = UDim2.new(0.8, 0, 0, 35)
+	toggleButton.Position = UDim2.new(0.1, 0, 0, 50)
 	toggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
 	toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	toggleButton.TextSize = 15
+	toggleButton.TextSize = 14
 	toggleButton.Font = Enum.Font.GothamBold
 	toggleButton.Text = "🟢 RADAR ATIVO"
-	toggleButton.BorderSizePixel = 0
 	toggleButton.Parent = mainFrame
-	
-	local toggleCorner = Instance.new("UICorner")
-	toggleCorner.CornerRadius = UDim.new(0, 8)
-	toggleCorner.Parent = toggleButton
-	
-	-- Hover no toggle
-	toggleButton.MouseEnter:Connect(function()
-		if radarActive then
-			toggleButton.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
-		else
-			toggleButton.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-		end
-	end)
-	
-	toggleButton.MouseLeave:Connect(function()
-		if radarActive then
-			toggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-		else
-			toggleButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-		end
-	end)
 	
 	toggleButton.MouseButton1Click:Connect(function()
 		radarActive = not radarActive
@@ -478,12 +433,12 @@ local function createGui()
 	local audioLabel = Instance.new("TextLabel")
 	audioLabel.Name = "AudioLabel"
 	audioLabel.Size = UDim2.new(1, 0, 0, 20)
-	audioLabel.Position = UDim2.new(0, 10, 0, 105)
+	audioLabel.Position = UDim2.new(0, 10, 0, 100)
 	audioLabel.BackgroundTransparency = 1
 	audioLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 	audioLabel.TextSize = 12
 	audioLabel.Font = Enum.Font.Gotham
-	audioLabel.Text = "🎙️ ID do Áudio:"
+	audioLabel.Text = "ID do Áudio:"
 	audioLabel.TextXAlignment = Enum.TextXAlignment.Left
 	audioLabel.Parent = mainFrame
 	
@@ -493,23 +448,16 @@ local function createGui()
 	
 	local audioBox = Instance.new("TextBox")
 	audioBox.Name = "AudioBox"
-	audioBox.Size = UDim2.new(0.85, 0, 0, 35)
-	audioBox.Position = UDim2.new(0.075, 0, 0, 130)
+	audioBox.Size = UDim2.new(0.8, 0, 0, 30)
+	audioBox.Position = UDim2.new(0.1, 0, 0, 125)
 	audioBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	audioBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-	audioBox.TextSize = 13
+	audioBox.TextSize = 12
 	audioBox.Font = Enum.Font.Gotham
 	audioBox.Text = string.match(CONFIG.DEFAULT_AUDIO_ID, "%d+") or "9114283110"
-	audioBox.PlaceholderText = "Cole o ID do áudio aqui"
-	audioBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+	audioBox.PlaceholderText = "Cole o ID do áudio"
 	audioBox.ClearTextOnFocus = false
-	audioBox.BorderSizePixel = 1
-	audioBox.BorderColor3 = Color3.fromRGB(100, 100, 100)
 	audioBox.Parent = mainFrame
-	
-	local audioBoxCorner = Instance.new("UICorner")
-	audioBoxCorner.CornerRadius = UDim.new(0, 6)
-	audioBoxCorner.Parent = audioBox
 	
 	audioBox.FocusLost:Connect(function(enterPressed)
 		if enterPressed or audioBox.Text ~= "" then
@@ -518,15 +466,9 @@ local function createGui()
 			if tonumber(audioId) then
 				currentAudioId = "rbxassetid://" .. audioId
 				print("✅ ID de áudio atualizado: " .. currentAudioId)
-				audioBox.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
-				task.wait(0.5)
-				audioBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 			else
 				print("❌ ID inválido!")
 				audioBox.Text = string.match(CONFIG.DEFAULT_AUDIO_ID, "%d+") or "9114283110"
-				audioBox.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-				task.wait(0.5)
-				audioBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 			end
 		end
 	end)
@@ -537,59 +479,47 @@ local function createGui()
 	
 	local statusLabel = Instance.new("TextLabel")
 	statusLabel.Name = "StatusLabel"
-	statusLabel.Size = UDim2.new(0.85, 0, 0, 80)
-	statusLabel.Position = UDim2.new(0.075, 0, 0, 175)
-	statusLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	statusLabel.Size = UDim2.new(0.9, 0, 0, 40)
+	statusLabel.Position = UDim2.new(0.05, 0, 0, 170)
+	statusLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 	statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-	statusLabel.TextSize = 12
+	statusLabel.TextSize = 11
 	statusLabel.Font = Enum.Font.Gotham
-	statusLabel.Text = "📊 Aguardando itens...\n🎙️ Som: Padrão\n⏱️ Status: Pronto"
+	statusLabel.Text = "📊 Aguardando itens...\n🎙️ Áudio: Padrão"
 	statusLabel.TextWrapped = true
-	statusLabel.BorderSizePixel = 1
-	statusLabel.BorderColor3 = Color3.fromRGB(100, 100, 100)
 	statusLabel.Parent = mainFrame
 	
-	local statusCorner = Instance.new("UICorner")
-	statusCorner.CornerRadius = UDim.new(0, 6)
-	statusCorner.Parent = statusLabel
-	
-	-- Atualizar status
 	task.spawn(function()
 		while mainFrame and mainFrame.Parent do
-			task.wait(1)
+			task.wait(2)
 			local detectedCount = 0
 			for _ in pairs(detectedItems) do
 				detectedCount = detectedCount + 1
 			end
 			
 			if mainFrame.Visible then
-				local radarStatus = radarActive and "✅ Ativo" or "❌ Inativo"
 				statusLabel.Text = string.format(
-					"📊 Detectados: %d itens\n🎙️ Som: Configurado\n⏱️ Status: %s",
+					"📊 Itens detectados: %d\n🎙️ Som: %s",
 					detectedCount,
-					radarStatus
+					"Ativo"
 				)
 			end
 		end
 	end)
 	
 	-- ============================================================
-	-- FRAME MINIMIZADO
+	-- FRAME MINIMIZADO (ARRASTÁVEL)
 	-- ============================================================
 	
 	minimizedFrame = Instance.new("Frame")
 	minimizedFrame.Name = "MinimizedFrame"
-	minimizedFrame.Size = UDim2.new(0, 70, 0, 70)
+	minimizedFrame.Size = UDim2.new(0, 60, 0, 60)
 	minimizedFrame.Position = UDim2.new(0, 20, 0, 100)
 	minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	minimizedFrame.BorderColor3 = Color3.fromRGB(255, 150, 0)
 	minimizedFrame.BorderSizePixel = 2
 	minimizedFrame.Visible = false
 	minimizedFrame.Parent = screenGui
-	
-	local minimizedCorner = Instance.new("UICorner")
-	minimizedCorner.CornerRadius = UDim.new(0, 10)
-	minimizedCorner.Parent = minimizedFrame
 	
 	local minimizedButton = Instance.new("TextButton")
 	minimizedButton.Name = "MinimizedButton"
@@ -598,17 +528,12 @@ local function createGui()
 	minimizedButton.BackgroundTransparency = 0
 	minimizedButton.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	minimizedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	minimizedButton.TextSize = 32
+	minimizedButton.TextSize = 28
 	minimizedButton.Font = Enum.Font.GothamBold
 	minimizedButton.Text = "🔔"
 	minimizedButton.BorderSizePixel = 0
 	minimizedButton.Parent = minimizedFrame
 	
-	local minimizedButtonCorner = Instance.new("UICorner")
-	minimizedButtonCorner.CornerRadius = UDim.new(0, 10)
-	minimizedButtonCorner.Parent = minimizedButton
-	
-	-- Hover no minimizado
 	minimizedButton.MouseEnter:Connect(function()
 		minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 130, 0)
 	end)
@@ -617,13 +542,45 @@ local function createGui()
 		minimizedFrame.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
 	end)
 	
-	-- Configurar drag do minimizado
-	setupDrag(minimizedButton, minimizedFrame)
+	-- DRAG DO FRAME MINIMIZADO
+	local draggingMinimized = false
+	local dragStartMinimized = nil
+	local frameStartMinimized = nil
 	
-	-- Restaurar painel ao clicar
-	minimizedButton.MouseButton1Click:Connect(function()
-		minimizedFrame.Visible = false
-		mainFrame.Visible = true
+	minimizedButton.MouseButton1Down:Connect(function()
+		draggingMinimized = true
+		dragStartMinimized = UserInputService:GetMouseLocation()
+		frameStartMinimized = minimizedFrame.Position
+	end)
+	
+	UserInputService.InputChanged:Connect(function(input, gameProcessed)
+		if draggingMinimized and input.UserInputType == Enum.UserInputType.Mouse then
+			local mousePos = UserInputService:GetMouseLocation()
+			local delta = mousePos - dragStartMinimized
+			minimizedFrame.Position = frameStartMinimized + UDim2.new(0, delta.X, 0, delta.Y)
+		end
+	end)
+	
+	UserInputService.InputEnded:Connect(function(input, gameProcessed)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			draggingMinimized = false
+		end
+	end)
+	
+	-- Restaurar painel ao clicar (sem movement)
+	local clickStartPos = nil
+	minimizedButton.MouseButton1Down:Connect(function()
+		clickStartPos = UserInputService:GetMouseLocation()
+	end)
+	
+	minimizedButton.MouseButton1Up:Connect(function()
+		local clickEndPos = UserInputService:GetMouseLocation()
+		local distance = (clickEndPos - clickStartPos).Magnitude
+		
+		if distance < 5 then
+			minimizedFrame.Visible = false
+			mainFrame.Visible = true
+		end
 	end)
 	
 	-- ============================================================
@@ -647,15 +604,12 @@ end
 -- ============================================================
 
 local function initialize()
-	print("\n" .. string.rep("=", 50))
-	print("🚀 INICIALIZANDO CHINELAOHUB RADAR - PC")
-	print(string.rep("=", 50) .. "\n")
+	print("🚀 Inicializando CHINELAOHUB RADAR...")
 	
 	createGui()
 	monitorDropFolder()
 	
 	print("✅ RADAR PRONTO PARA USAR!")
-	print(string.rep("=", 50) .. "\n")
 end
 
 task.wait(1)
