@@ -24,34 +24,67 @@ local COLORS = {
     TOGGLE_ON = Color3.fromRGB(34, 211, 238),
     TOGGLE_OFF = Color3.fromRGB(40, 45, 60),
     HOVER_MIN = Color3.fromRGB(0, 190, 255),
-    HOVER_CLOSE = Color3.fromRGB(255, 0, 0)
+    HOVER_CLOSE = Color3.fromRGB(255, 0, 0),
+    NEON_GREEN = Color3.fromRGB(0, 255, 0)
 }
 
--- [[ ESTADOS GLOBAIS ]] --
+-- [[ ESTADOS ]] --
 _G.AutoPurchase = false
 _G.WalkSpeedEnabled = false
 _G.WalkSpeedValue = 16
 _G.SelectedBrainrots = {}
 
-if parentGui:FindFirstChild("ChinelaoPremium_RESTORADO") then
-    parentGui:FindFirstChild("ChinelaoPremium_RESTORADO"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_Gostoso_V6") then
+    parentGui:FindFirstChild("ChinelaoPremium_Gostoso_V6"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_RESTORADO"
+sg.Name = "ChinelaoPremium_Gostoso_V6"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
+
+-- [[ BOTÃO ABRIR ]] --
+local OpenBtn = Instance.new("ImageButton", sg)
+OpenBtn.AnchorPoint = Vector2.new(0.5, 0.5); OpenBtn.Size = UDim2.fromOffset(60, 60)
+OpenBtn.Position = UDim2.new(0, 50, 0.5, 0); OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Visible = false
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
+
+local OpenText = Instance.new("TextLabel", OpenBtn)
+OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
 Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.Size = UDim2.fromOffset(550, 350)
-Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.BackgroundColor3 = COLORS.BG
+Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
 local PanelTitle = Instance.new("TextLabel", Main)
 PanelTitle.Size = UDim2.new(0, 250, 0, 50); PanelTitle.Position = UDim2.new(0, 20, 0, 0); PanelTitle.BackgroundTransparency = 1
 PanelTitle.Text = "CHINELÃO PREMIUM"; PanelTitle.TextColor3 = COLORS.TEXT; PanelTitle.Font = Enum.Font.GothamBold; PanelTitle.TextSize = 18; PanelTitle.TextXAlignment = 0
+
+-- [[ ANIMAÇÕES ]] --
+local function CleanAnimate(gui, show)
+    local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
+    if show then
+        gui.Size = UDim2.fromOffset(0, 0); gui.Visible = true
+        TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Back), {Size = targetSize}):Play()
+    else
+        local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {Size = UDim2.fromOffset(0, 0)})
+        tween:Play(); tween.Completed:Connect(function() gui.Visible = false end)
+    end
+end
+
+local function createTopBtn(txt, pos, hov, cb)
+    local b = Instance.new("TextButton", Main)
+    b.Size = UDim2.fromOffset(35, 35); b.Position = UDim2.new(1, pos, 0, 10); b.BackgroundColor3 = COLORS.BTN_BG
+    b.Text = txt; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    b.MouseButton1Click:Connect(cb)
+end
+createTopBtn("—", -90, COLORS.HOVER_MIN, function() CleanAnimate(Main, false); task.wait(0.2); CleanAnimate(OpenBtn, true) end)
+createTopBtn("X", -45, COLORS.HOVER_CLOSE, function() CleanAnimate(Main, false); task.wait(0.3); sg:Destroy() end)
+OpenBtn.MouseButton1Click:Connect(function() CleanAnimate(OpenBtn, false); task.wait(0.2); CleanAnimate(Main, true) end)
 
 -- [[ SIDEBAR E PÁGINAS ]] --
 local Sidebar = Instance.new("Frame", Main)
@@ -92,13 +125,15 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ AUTO PURCHASE GOSTOSO (VOLTOU) ]] --
-createToggle(pPlayer, "Auto Purchase", function(s) 
+-- [[ O FAMOSO AUTO PURCHASE GOSTOSO ]] --
+createToggle(pPlayer, "Auto Purchase (ON)", function(s) 
     _G.AutoPurchase = s 
     if s then
         task.spawn(function()
             while _G.AutoPurchase do
+                -- Lógica "agressiva" de compra
                 pcall(function()
+                    -- Tenta tocar em botões de compra no mundo
                     for _, v in pairs(workspace:GetDescendants()) do
                         if v.Name == "Touch" or v.Name == "Purchase" or v:FindFirstChild("TouchTransmitter") then
                             if v:IsA("BasePart") then
@@ -107,30 +142,23 @@ createToggle(pPlayer, "Auto Purchase", function(s)
                             end
                         end
                     end
+                    -- Tenta ativar botões de compra em interfaces (GUI)
+                    for _, gui in pairs(LocalPlayer.PlayerGui:GetDescendants()) do
+                        if gui:IsA("TextButton") and (gui.Text:find("Buy") or gui.Text:find("Purchase")) then
+                            gui:Activate()
+                        end
+                    end
                 end)
-                task.wait(0.3)
+                task.wait(0.3) -- Velocidade rápida de compra
             end
         end)
     end
 end)
 
 createToggle(pPlayer, "Instant Grab", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
+createToggle(pPlayer, "WalkSpeed Hack", function(s) _G.WalkSpeedEnabled = s end)
 
--- [[ ABA SERVERS - FUNÇÃO PREMIUM SERVER ]] --
-local bPremium = Instance.new("TextButton", pServers)
-bPremium.Size = UDim2.new(1, -10, 0, 45); bPremium.BackgroundColor3 = COLORS.BTN_BG; bPremium.Text = "Premium Server"; bPremium.TextColor3 = COLORS.ACCENT; bPremium.Font = Enum.Font.GothamBold; bPremium.TextSize = 14
-Instance.new("UICorner", bPremium).CornerRadius = UDim.new(0, 8)
-
-bPremium.MouseButton1Click:Connect(function()
-    local success, result = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
-    end)
-    if success and result.data then
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, result.data[1].id)
-    end
-end)
-
--- [[ FARM ]] --
+-- ABA FARM
 local list = {"pipi potato", "tung tung tung", "sahur", "tim cheease", "lirililarila", "fluri flura", "cacto", "hipopotamo"}
 for _, item in pairs(list) do
     createToggle(pFarm, "Farm: "..item, function(s)
@@ -140,12 +168,14 @@ for _, item in pairs(list) do
     end)
 end
 
--- [[ LOOP SPEED ]] --
-createToggle(pPlayer, "WalkSpeed Hack", function(s) _G.WalkSpeedEnabled = s end)
+-- ABA FLY / SERVERS
+createToggle(pFly, "Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
+
+-- [[ LOOPS ]] --
 task.spawn(function()
     while true do task.wait(0.1)
         if _G.WalkSpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = 100
+            LocalPlayer.Character.Humanoid.WalkSpeed = _G.WalkSpeedValue
         end
     end
 end)
@@ -160,4 +190,4 @@ local function makeDraggable(gui)
     end end)
     UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then d = false end end)
 end
-makeDraggable(Main)
+makeDraggable(Main); makeDraggable(OpenBtn)
