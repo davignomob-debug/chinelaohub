@@ -3,6 +3,7 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 local function GetSafeGui()
@@ -25,28 +26,26 @@ local COLORS = {
     HOVER_RED = Color3.fromRGB(255, 60, 60)
 }
 
-if parentGui:FindFirstChild("ChinelaoPremium_Final_V14") then
-    parentGui:FindFirstChild("ChinelaoPremium_Final_V14"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_Final_V15") then
+    parentGui:FindFirstChild("ChinelaoPremium_Final_V15"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final_V14"
+sg.Name = "ChinelaoPremium_Final_V15"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ FUNÇÃO DE ARRASTAR REFORÇADA ]] --
-local function makeDraggable(gui, target)
-    local dragging, dragInput, dragStart, startPos
+-- [[ SISTEMA DE ARRASTE DEFINITIVO ]] --
+local function Drag(gui, target)
     local target = target or gui
+    local dragging = false
+    local dragInput, dragStart, startPos
 
     gui.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = target.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
         end
     end)
 
@@ -62,9 +61,15 @@ local function makeDraggable(gui, target)
             target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
 end
 
--- [[ BOTÃO ABRIR (CHINELAOHUB) ]] --
+-- [[ ÍCONE DE ABRIR ]] --
 local OpenBtn = Instance.new("Frame", sg)
 OpenBtn.Size = UDim2.fromOffset(75, 90)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, -45)
@@ -85,8 +90,8 @@ OpenLabel.Font = Enum.Font.GothamBold; OpenLabel.TextSize = 11
 local OpenTrigger = Instance.new("TextButton", OpenBtn)
 OpenTrigger.Size = UDim2.new(1, 0, 1, 0); OpenTrigger.BackgroundTransparency = 1; OpenTrigger.Text = ""
 
--- Aplica o arraste no gatilho do botão também
-makeDraggable(OpenTrigger, OpenBtn)
+-- Aplica o arraste no gatilho do botão e no frame
+Drag(OpenTrigger, OpenBtn)
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
@@ -94,11 +99,12 @@ Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.Size = UDim2.fromOffset(720, 480)
 Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.BackgroundColor3 = COLORS.BG
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
-makeDraggable(Main)
+Drag(Main) -- Arrastável pela área do fundo e bordas
 
--- TOP BAR (CONTROLES)
+-- TOP BAR (Garante o arraste pela parte de cima)
 local TopBar = Instance.new("Frame", Main)
 TopBar.Size = UDim2.new(1, 0, 0, 55); TopBar.BackgroundTransparency = 1
+Drag(TopBar, Main)
 
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 25, 0, 0); Title.BackgroundTransparency = 1
@@ -120,9 +126,7 @@ end
 createControlBtn("-", 0, COLORS.ACCENT, function() Main.Visible = false; OpenBtn.Visible = true end)
 createControlBtn("X", 45, COLORS.HOVER_RED, function() sg:Destroy() end)
 
--- Lógica de Abrir
 OpenTrigger.MouseButton1Click:Connect(function()
-    -- Só abre se não estiver arrastando (para não abrir sem querer ao mover)
     OpenBtn.Visible = false
     Main.Visible = true
 end)
@@ -182,25 +186,6 @@ local function createToggle(parent, text, callback)
         callback(act)
     end)
 end
-
--- FUNÇÕES
-_G.AutoPurchase = false
-task.spawn(function()
-    while task.wait(0.1) do
-        if _G.AutoPurchase then
-            for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("ProximityPrompt") then
-                    v.HoldDuration = 0
-                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        if (LocalPlayer.Character.HumanoidRootPart.Position - v.Parent.Position).Magnitude < v.MaxActivationDistance then
-                            fireproximityprompt(v)
-                        end
-                    end
-                end
-            end
-        end
-    end
-end)
 
 createToggle(pPlayer, "Auto Purchase Items", function(s) _G.AutoPurchase = s end)
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
