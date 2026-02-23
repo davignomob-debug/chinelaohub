@@ -38,7 +38,6 @@ sg.Parent = parentGui
 -- [[ ESTADOS ]] --
 _G.WalkSpeedValue = 16
 _G.AutoPurchase = false
-_G.SelectedBrainrots = {} -- Tabela para múltiplos itens
 _G.AutoFarmEnabled = false
 
 -- [[ BOTÃO ABRIR ]] --
@@ -62,7 +61,7 @@ local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 25, 0, 0); Title.BackgroundTransparency = 1
 Title.Text = "CHINELÃO HUB"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.TextXAlignment = 0; Title.ZIndex = 12
 
--- CONTROLES
+-- BOTÕES CONTROLE
 local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 100, 1, 0); Controls.Position = UDim2.new(1, -110, 0, 0); Controls.BackgroundTransparency = 1
 local function createControlBtn(txt, pos, hoverColor, callback)
@@ -102,47 +101,11 @@ local function createTab(name)
 end
 createTab("PLAYER"); createTab("FARM"); createTab("FLY"); createTab("SERVERS")
 
--- [[ MULTI-SELECT DROPDOWN ]] --
-local function createMultiDropdown(parent, text, list, callback)
-    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 60); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    
-    local title = Instance.new("TextLabel", card); title.Text = text; title.Size = UDim2.new(1, -100, 1, 0); title.Position = UDim2.new(0, 18, 0, 0); title.TextColor3 = COLORS.TEXT; title.Font = Enum.Font.GothamSemibold; title.TextSize = 15; title.BackgroundTransparency = 1; title.TextXAlignment = 0; title.ZIndex = 17
-    
-    local btn = Instance.new("TextButton", card); btn.Text = "Select ▼"; btn.Size = UDim2.new(0, 120, 0, 35); btn.Position = UDim2.new(1, -135, 0.5, -17.5); btn.BackgroundColor3 = Color3.fromRGB(30, 35, 45); btn.TextColor3 = COLORS.ACCENT; btn.Font = Enum.Font.GothamBold; btn.TextSize = 13; btn.ZIndex = 18
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-
-    local dropFrame = Instance.new("ScrollingFrame", parent); dropFrame.Visible = false; dropFrame.Size = UDim2.new(1, -10, 0, 160); dropFrame.BackgroundColor3 = COLORS.SIDEBAR; dropFrame.ZIndex = 50; dropFrame.ScrollBarThickness = 2; dropFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Instance.new("UIListLayout", dropFrame).Padding = UDim.new(0, 5); Instance.new("UICorner", dropFrame)
-
-    btn.MouseButton1Click:Connect(function() dropFrame.Visible = not dropFrame.Visible end)
-
-    for _, item in pairs(list) do
-        local opt = Instance.new("TextButton", dropFrame); opt.Text = item; opt.Size = UDim2.new(1, 0, 0, 35); opt.BackgroundColor3 = Color3.fromRGB(40, 45, 55); opt.TextColor3 = COLORS.TEXT; opt.Font = Enum.Font.GothamMedium; opt.TextSize = 13; opt.ZIndex = 51
-        Instance.new("UICorner", opt)
-        
-        opt.MouseButton1Click:Connect(function()
-            if table.find(_G.SelectedBrainrots, item) then
-                table.remove(_G.SelectedBrainrots, table.find(_G.SelectedBrainrots, item))
-                opt.TextColor3 = COLORS.TEXT
-                opt.BackgroundColor3 = Color3.fromRGB(40, 45, 55)
-            else
-                table.insert(_G.SelectedBrainrots, item)
-                opt.TextColor3 = COLORS.NEON_GREEN
-                opt.BackgroundColor3 = Color3.fromRGB(20, 60, 40)
-            end
-            local count = #_G.SelectedBrainrots
-            btn.Text = count > 0 and "Selected: "..count or "Select ▼"
-            callback(_G.SelectedBrainrots)
-        end)
-    end
-end
-
 -- [[ COMPONENTE TOGGLE ]] --
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 55); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", card); l.Text = text; l.Size = UDim2.new(1, -70, 1, 0); l.Position = UDim2.new(0, 18, 0, 0); l.TextColor3 = COLORS.TEXT; l.Font = Enum.Font.GothamSemibold; l.TextSize = 15; l.BackgroundTransparency = 1; l.TextXAlignment = 0; l.ZIndex = 17
-    local btn = Instance.new("TextButton", card); btn.Size = UDim2.fromOffset(45, 24); btn.Position = UDim2.new(1, -60, 0.5, -12); btn.BackgroundColor3 = COLORS.TOGGLE_OFF; btn.ZIndex = 17; Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
+    local btn = Instance.new("TextButton", card); btn.Size = UDim2.fromOffset(45, 24); btn.Position = UDim2.new(1, -60, 0.5, -12); btn.BackgroundColor3 = COLORS.TOGGLE_OFF; btn.Text = ""; btn.ZIndex = 17; Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
     local dot = Instance.new("Frame", btn); dot.Size = UDim2.fromOffset(18, 18); dot.Position = UDim2.new(0, 3, 0.5, -9); dot.BackgroundColor3 = Color3.new(1,1,1); dot.ZIndex = 18; Instance.new("UICorner", dot).CornerRadius = UDim.new(1,0)
     local act = false
     btn.MouseButton1Click:Connect(function()
@@ -153,17 +116,11 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ ABA FARM ]] --
-local brainrots = {"pipi potato", "tim cheease", "tung tung tung", "sahur"}
-
-createMultiDropdown(pFarm, "Auto Farm Targets", brainrots, function(choices)
-    _G.SelectedBrainrots = choices
-end)
-
-createToggle(pFarm, "Enable Multi-Farm", function(s)
+-- [[ ABA FARM (FOCO LABORATÓRIO) ]] --
+createToggle(pFarm, "Auto Farm Pipi Potato", function(s)
     _G.AutoFarmEnabled = s
     if s then
-        print("Atacando: " .. table.concat(_G.SelectedBrainrots, ", "))
+        print("Farmando Pipi Potato na Esteira do Laboratório...")
     end
 end)
 
@@ -171,6 +128,7 @@ end)
 createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
 local function createSlider(parent, text, min, max, callback)
     local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 85); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    local title = Instance.new("TextLabel", card); title.Text = "Speed Modifier"; title.Size = UDim2.new(0, 200, 0, 20); title.Position = UDim2.new(0, 15, 0, 8); title.TextColor3 = COLORS.NEON_GREEN; title.Font = Enum.Font.GothamBold; title.TextSize = 14; title.BackgroundTransparency = 1; title.TextXAlignment = 0; title.ZIndex = 17
     local valLbl = Instance.new("TextLabel", card); valLbl.Text = _G.WalkSpeedValue .. " speed"; valLbl.Size = UDim2.new(0, 100, 0, 20); valLbl.Position = UDim2.new(1, -115, 0, 30); valLbl.TextColor3 = COLORS.NEON_GREEN; valLbl.Font = Enum.Font.GothamBold; valLbl.TextSize = 14; valLbl.BackgroundTransparency = 1; valLbl.TextXAlignment = 2; valLbl.ZIndex = 17
     local sliderBg = Instance.new("Frame", card); sliderBg.Size = UDim2.new(1, -30, 0, 4); sliderBg.Position = UDim2.new(0, 15, 0, 55); sliderBg.BackgroundColor3 = Color3.fromRGB(45, 55, 72); sliderBg.ZIndex = 17; Instance.new("UICorner", sliderBg)
     local fill = Instance.new("Frame", sliderBg); fill.Size = UDim2.new(0, 0, 1, 0); fill.BackgroundColor3 = COLORS.NEON_GREEN; fill.ZIndex = 18; Instance.new("UICorner", fill)
@@ -186,6 +144,9 @@ local function createSlider(parent, text, min, max, callback)
     UserInputService.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then update() end end)
 end
 createSlider(pPlayer, "Walk Speed", 32, 300, function(v) _G.WalkSpeedValue = v end)
+
+-- [[ ABA FLY ]] --
+createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
 
 -- [[ LOOPS ]] --
 task.spawn(function()
