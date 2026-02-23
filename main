@@ -2,9 +2,7 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local LocalPlayer = Players.LocalPlayer
 
 local function GetSafeGui()
@@ -16,113 +14,183 @@ end
 local parentGui = GetSafeGui()
 
 local COLORS = {
-    BG = Color3.fromRGB(16, 24, 39),
+    BG = Color3.fromRGB(13, 17, 23),
+    SIDEBAR = Color3.fromRGB(10, 12, 16),
     STROKE = Color3.fromRGB(56, 189, 248),
     TEXT = Color3.fromRGB(241, 245, 249),
     ACCENT = Color3.fromRGB(34, 211, 238),
-    BTN_BG = Color3.fromRGB(30, 41, 59),
-    CARD_BG = Color3.fromRGB(10, 10, 15),
+    CARD_BG = Color3.fromRGB(17, 22, 28),
     TOGGLE_ON = Color3.fromRGB(34, 211, 238),
-    TOGGLE_OFF = Color3.fromRGB(40, 45, 60),
-    HOVER_CYAN = Color3.fromRGB(0, 255, 255),
-    HOVER_RED = Color3.fromRGB(255, 0, 0)
+    TOGGLE_OFF = Color3.fromRGB(45, 55, 72)
 }
 
-if parentGui:FindFirstChild("ChinelaoPremium_Final_V9") then
-    parentGui:FindFirstChild("ChinelaoPremium_Final_V9"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_Final_V10") then
+    parentGui:FindFirstChild("ChinelaoPremium_Final_V10"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final_V9"
+sg.Name = "ChinelaoPremium_Final_V10"
 sg.ResetOnSpawn = false
-sg.DisplayOrder = 999
 sg.Parent = parentGui
 
 -- [[ BOTÃO ABRIR ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
-OpenBtn.Size = UDim2.fromOffset(60, 60); OpenBtn.Position = UDim2.new(0, 20, 0.5, 0); OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Visible = false; OpenBtn.ZIndex = 100
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
+OpenBtn.Size = UDim2.fromOffset(50, 50)
+OpenBtn.Position = UDim2.new(0, 20, 0.5, 0)
+OpenBtn.BackgroundColor3 = COLORS.BG
+OpenBtn.Visible = false
+OpenBtn.ZIndex = 100
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 10)
 local OpenStroke = Instance.new("UIStroke", OpenBtn)
-OpenStroke.Color = COLORS.ACCENT; OpenStroke.Thickness = 2
-local OpenText = Instance.new("TextLabel", OpenBtn)
-OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "ABRIR"; OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10; OpenText.ZIndex = 101
+OpenStroke.Color = COLORS.ACCENT
+OpenStroke.Thickness = 2
 
--- [[ FRAME PRINCIPAL - TAMANHO AJUSTADO ]] --
+-- [[ FRAME PRINCIPAL (TAMANHO DA FOTO) ]] --
 local Main = Instance.new("Frame", sg)
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Size = UDim2.fromOffset(600, 400) -- Tamanho solicitado baseado na foto
+Main.Size = UDim2.fromOffset(640, 430) -- Tamanho proporcional à captura de tela
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 Main.BackgroundColor3 = COLORS.BG
 Main.ZIndex = 10
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Color = COLORS.STROKE; MainStroke.Thickness = 2
+MainStroke.Color = COLORS.STROKE
+MainStroke.Thickness = 2
 
--- BARRA DE TÍTULO
-local TitleBar = Instance.new("Frame", Main)
-TitleBar.Size = UDim2.new(1, 0, 0, 45); TitleBar.BackgroundTransparency = 1; TitleBar.ZIndex = 11
+-- TOP BAR
+local TopBar = Instance.new("Frame", Main)
+TopBar.Size = UDim2.new(1, 0, 0, 45)
+TopBar.BackgroundTransparency = 1
+TopBar.ZIndex = 11
 
-local PanelTitle = Instance.new("TextLabel", TitleBar)
-PanelTitle.Size = UDim2.new(0, 250, 1, 0); PanelTitle.Position = UDim2.new(0, 20, 0, 0); PanelTitle.BackgroundTransparency = 1; PanelTitle.Text = "CHINELÃO PREMIUM"; PanelTitle.TextColor3 = COLORS.TEXT; PanelTitle.Font = Enum.Font.GothamBold; PanelTitle.TextSize = 18; PanelTitle.TextXAlignment = 0; PanelTitle.ZIndex = 12
+local Title = Instance.new("TextLabel", TopBar)
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(0, 20, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "CHINELÃO PREMIUM"
+Title.TextColor3 = COLORS.TEXT
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = 0
+Title.ZIndex = 12
 
--- BOTÕES DE CONTROLE
-local MinBtn = Instance.new("TextButton", TitleBar)
-MinBtn.Size = UDim2.fromOffset(30, 30); MinBtn.Position = UDim2.new(1, -75, 0.5, -15); MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.ZIndex = 15; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 6)
+-- BOTÕES MIN/FECHAR
+local Controls = Instance.new("Frame", TopBar)
+Controls.Size = UDim2.new(0, 100, 1, 0)
+Controls.Position = UDim2.new(1, -110, 0, 0)
+Controls.BackgroundTransparency = 1
 
-local CloseBtn = Instance.new("TextButton", TitleBar)
-CloseBtn.Size = UDim2.fromOffset(30, 30); CloseBtn.Position = UDim2.new(1, -40, 0.5, -15); CloseBtn.BackgroundColor3 = COLORS.BTN_BG; CloseBtn.Text = "X"; CloseBtn.TextColor3 = COLORS.TEXT; CloseBtn.ZIndex = 15; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+local function createControlBtn(txt, pos, color, callback)
+    local b = Instance.new("TextButton", Controls)
+    b.Size = UDim2.fromOffset(28, 28)
+    b.Position = UDim2.new(0, pos, 0.5, -14)
+    b.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+    b.Text = txt
+    b.TextColor3 = COLORS.TEXT
+    b.ZIndex = 15
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    b.MouseButton1Click:Connect(callback)
+end
 
-MinBtn.MouseButton1Click:Connect(function() Main.Visible = false; OpenBtn.Visible = true end)
+createControlBtn("-", 0, nil, function() Main.Visible = false; OpenBtn.Visible = true end)
+createControlBtn("X", 40, nil, function() sg:Destroy() end)
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
-CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- [[ PERFIL DINÂMICO ]] --
+-- [[ SIDEBAR ]] --
+local Sidebar = Instance.new("Frame", Main)
+Sidebar.Size = UDim2.new(0, 160, 1, -55)
+Sidebar.Position = UDim2.new(0, 0, 0, 50)
+Sidebar.BackgroundColor3 = COLORS.SIDEBAR
+Sidebar.BackgroundTransparency = 0.5
+Sidebar.ZIndex = 11
+
+local SideLayout = Instance.new("UIListLayout", Sidebar)
+SideLayout.Padding = UDim.new(0, 5)
+SideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- [[ PERFIL (ESTILO FOTO) ]] --
 local UserProfile = Instance.new("Frame", Main)
-UserProfile.Size = UDim2.new(0, 150, 0, 55)
-UserProfile.Position = UDim2.new(0, 10, 1, -65)
+UserProfile.Size = UDim2.new(0, 150, 0, 60)
+UserProfile.Position = UDim2.new(0, 5, 1, -65)
 UserProfile.BackgroundTransparency = 1
 UserProfile.ZIndex = 20
 
 local pfp = Instance.new("ImageLabel", UserProfile)
-pfp.Size = UDim2.fromOffset(42, 42)
-pfp.Position = UDim2.new(0, 5, 0.5, -21)
-pfp.BackgroundColor3 = COLORS.BTN_BG
+pfp.Size = UDim2.fromOffset(45, 45)
+pfp.Position = UDim2.new(0, 10, 0.5, -22)
+pfp.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
 pfp.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=150&h=150"
 pfp.ZIndex = 21
 Instance.new("UICorner", pfp).CornerRadius = UDim.new(1, 0)
 
-local UserName = Instance.new("TextLabel", UserProfile)
-UserName.Size = UDim2.new(1, -55, 0, 20); UserName.Position = UDim2.new(0, 55, 0.15, 0); UserName.BackgroundTransparency = 1
-UserName.Text = LocalPlayer.DisplayName; UserName.TextColor3 = COLORS.TEXT; UserName.Font = Enum.Font.GothamBold; UserName.TextSize = 13; UserName.TextXAlignment = 0; UserName.ZIndex = 21
+local NameLbl = Instance.new("TextLabel", UserProfile)
+NameLbl.Size = UDim2.new(1, -65, 0, 20); NameLbl.Position = UDim2.new(0, 62, 0.2, 0); NameLbl.BackgroundTransparency = 1
+NameLbl.Text = LocalPlayer.DisplayName; NameLbl.TextColor3 = COLORS.TEXT; NameLbl.Font = Enum.Font.GothamBold; NameLbl.TextSize = 13; NameLbl.TextXAlignment = 0; NameLbl.ZIndex = 21
 
-local PremiumTag = Instance.new("TextLabel", UserProfile)
-PremiumTag.Size = UDim2.new(1, -55, 0, 15); PremiumTag.Position = UDim2.new(0, 55, 0.55, 0); PremiumTag.BackgroundTransparency = 1
-PremiumTag.Text = "Premium User"; PremiumTag.TextColor3 = COLORS.HOVER_CYAN; PremiumTag.Font = Enum.Font.GothamMedium; PremiumTag.TextSize = 11; PremiumTag.TextXAlignment = 0; PremiumTag.ZIndex = 21
+local PremLbl = Instance.new("TextLabel", UserProfile)
+PremLbl.Size = UDim2.new(1, -65, 0, 15); PremLbl.Position = UDim2.new(0, 62, 0.55, 0); PremLbl.BackgroundTransparency = 1
+PremLbl.Text = "Premium User"; PremLbl.TextColor3 = COLORS.ACCENT; PremLbl.Font = Enum.Font.GothamMedium; PremLbl.TextSize = 11; PremLbl.TextXAlignment = 0; PremLbl.ZIndex = 21
 
--- SIDEBAR E CONTEÚDO
-local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 150, 1, -125); Sidebar.Position = UDim2.new(0, 10, 0, 55); Sidebar.BackgroundTransparency = 1; Sidebar.ZIndex = 11
-Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 5)
-
+-- [[ CONTAINER DE PÁGINAS ]] --
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -180, 1, -70); Container.Position = UDim2.new(0, 170, 0, 55); Container.BackgroundColor3 = Color3.fromRGB(10, 15, 25); Container.ZIndex = 11
-Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
+Container.Size = UDim2.new(1, -180, 1, -70)
+Container.Position = UDim2.new(0, 170, 0, 60)
+Container.BackgroundTransparency = 1
+Container.ZIndex = 11
 
 local pages = {}
 local function createPage(name)
-    local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, -10, 1, -10); p.Position = UDim2.fromOffset(5,5); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 2; p.ZIndex = 15; p.AutomaticCanvasSize = 2
-    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8); pages[name] = p; return p
+    local p = Instance.new("ScrollingFrame", Container)
+    p.Size = UDim2.new(1, 0, 1, 0)
+    p.BackgroundTransparency = 1
+    p.Visible = false
+    p.ScrollBarThickness = 2
+    p.ZIndex = 15
+    Instance.new("UIListLayout", p).Padding = UDim.new(0, 10)
+    pages[name] = p
+    return p
 end
 
 local pPlayer = createPage("PLAYER"); pPlayer.Visible = true
+local pFly = createPage("FLY")
+local pServer = createPage("SERVER")
 
 local function createTab(name)
-    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.ZIndex = 15; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-    b.MouseButton1Click:Connect(function() for _, v in pairs(pages) do v.Visible = false end; pages[name].Visible = true end)
+    local b = Instance.new("TextButton", Sidebar)
+    b.Size = UDim2.new(0, 140, 0, 38)
+    b.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+    b.Text = name
+    b.TextColor3 = COLORS.TEXT
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 13
+    b.ZIndex = 16
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    b.MouseButton1Click:Connect(function()
+        for _, v in pairs(pages) do v.Visible = false end
+        pages[name].Visible = true
+    end)
 end
-createTab("PLAYER"); createTab("SERVERS"); createTab("FLY")
 
--- [[ FUNÇÃO AUTO PURCHASE ]] --
+createTab("PLAYER")
+createTab("FLY")
+createTab("SERVER")
+
+-- [[ COMPONENTES ]] --
+local function createToggle(parent, text, callback)
+    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    local l = Instance.new("TextLabel", card); l.Text = text; l.Size = UDim2.new(1, -60, 1, 0); l.Position = UDim2.new(0, 15, 0, 0); l.TextColor3 = COLORS.TEXT; l.Font = Enum.Font.GothamSemibold; l.TextSize = 14; l.BackgroundTransparency = 1; l.TextXAlignment = 0; l.ZIndex = 17
+    local btn = Instance.new("TextButton", card); btn.Size = UDim2.fromOffset(40, 22); btn.Position = UDim2.new(1, -50, 0.5, -11); btn.BackgroundColor3 = COLORS.TOGGLE_OFF; btn.Text = ""; btn.ZIndex = 17; Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
+    local dot = Instance.new("Frame", btn); dot.Size = UDim2.fromOffset(16, 16); dot.Position = UDim2.new(0, 3, 0.5, -8); dot.BackgroundColor3 = Color3.new(1,1,1); dot.ZIndex = 18; Instance.new("UICorner", dot).CornerRadius = UDim.new(1,0)
+    local act = false
+    btn.MouseButton1Click:Connect(function()
+        act = not act
+        dot.Position = act and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+        btn.BackgroundColor3 = act and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
+        callback(act)
+    end)
+end
+
+-- FUNCIONALIDADES
 _G.AutoPurchase = false
 task.spawn(function()
     while task.wait(0.1) do
@@ -130,10 +198,8 @@ task.spawn(function()
             for _, v in pairs(game:GetDescendants()) do
                 if v:IsA("ProximityPrompt") then
                     v.HoldDuration = 0
-                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        if (v.Parent:IsA("BasePart") and (LocalPlayer.Character.HumanoidRootPart.Position - v.Parent.Position).Magnitude < v.MaxActivationDistance) then
-                            fireproximityprompt(v)
-                        end
+                    if LocalPlayer.Character and (LocalPlayer.Character.PrimaryPart.Position - v.Parent.Position).Magnitude < v.MaxActivationDistance then
+                        fireproximityprompt(v)
                     end
                 end
             end
@@ -141,21 +207,18 @@ task.spawn(function()
     end
 end)
 
-local function createToggle(parent, text, callback)
-    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, 0, 0, 45); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 6)
-    local l = Instance.new("TextLabel", card); l.Text = text; l.Size = UDim2.new(1, -50, 1, 0); l.Position = UDim2.new(0, 10, 0, 0); l.TextColor3 = COLORS.TEXT; l.Font = Enum.Font.GothamSemibold; l.TextSize = 14; l.BackgroundTransparency = 1; l.TextXAlignment = 0; l.ZIndex = 17
-    local btn = Instance.new("TextButton", card); btn.Size = UDim2.fromOffset(35, 18); btn.Position = UDim2.new(1, -45, 0.5, -9); btn.BackgroundColor3 = COLORS.TOGGLE_OFF; btn.Text = ""; btn.ZIndex = 17; Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
-    local check = Instance.new("Frame", btn); check.Size = UDim2.fromOffset(14, 14); check.Position = UDim2.new(0, 2, 0.5, -7); check.BackgroundColor3 = Color3.new(1,1,1); check.ZIndex = 18; Instance.new("UICorner", check).CornerRadius = UDim.new(1,0)
-    local act = false
-    btn.MouseButton1Click:Connect(function()
-        act = not act
-        check.Position = act and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
-        btn.BackgroundColor3 = act and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
-        callback(act)
-    end)
-end
-
 createToggle(pPlayer, "Auto Purchase Items", function(s) _G.AutoPurchase = s end)
+
+createToggle(pFly, "Enable Fly GUI V3", function(s)
+    if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end
+end)
+
+createToggle(pServer, "Rejoin Premium Server", function(s)
+    if s then
+        local servers = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        if servers and servers.data then TeleportService:TeleportToPlaceInstance(game.PlaceId, servers.data[1].id) end
+    end
+end)
 
 -- DRAG
 local function makeDraggable(gui)
