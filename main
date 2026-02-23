@@ -34,15 +34,15 @@ sg.Name = "ChinelaoPremium_Final_V11"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO ABRIR (MINIMIZADO) - FOTO CORRIGIDA ]] --
+-- [[ BOTÃO ABRIR (MINIMIZADO) ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
 OpenBtn.Size = UDim2.fromOffset(65, 65)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, 0)
-OpenBtn.BackgroundTransparency = 1 -- Fundo transparente para não escurecer a foto
+OpenBtn.BackgroundTransparency = 1
 OpenBtn.Visible = false
 OpenBtn.ZIndex = 100
 OpenBtn.Image = "rbxassetid://131109000100412"
-OpenBtn.ImageColor3 = Color3.new(1, 1, 1) -- Garante que a foto não fique preta
+OpenBtn.ImageColor3 = Color3.new(1, 1, 1)
 
 local OpenCorner = Instance.new("UICorner", OpenBtn)
 OpenCorner.CornerRadius = UDim.new(0, 12)
@@ -78,7 +78,7 @@ Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.ZIndex = 12
 
--- CONTROLES (X e -) COM HOVER CORRIGIDO
+-- CONTROLES (X e -)
 local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 100, 1, 0)
 Controls.Position = UDim2.new(1, -110, 0, 0)
@@ -141,7 +141,7 @@ NameLbl.TextSize = 14
 NameLbl.TextXAlignment = Enum.TextXAlignment.Left
 NameLbl.ZIndex = 21
 
--- ABAS E CONTEÚDO
+-- PAGINAS
 local Container = Instance.new("Frame", Main)
 Container.Size = UDim2.new(1, -210, 1, -80)
 Container.Position = UDim2.new(0, 195, 0, 65)
@@ -251,7 +251,9 @@ task.spawn(function()
     end
 end)
 
-createToggle(pPlayer, "Auto Purchase Items", function(s) _G.AutoPurchase = s end)
+-- AJUSTE DE NOME AQUI:
+createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
+
 createToggle(pFly, "Enable Fly GUI V3", function(s)
     if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end
 end)
@@ -259,7 +261,7 @@ createToggle(pServer, "Rejoin Server", function(s)
     if s then TeleportService:Teleport(game.PlaceId, LocalPlayer) end
 end)
 
--- SISTEMA DE ARRASTE
+-- DRAG
 local function makeDraggable(gui, target)
     local target = target or gui
     local dragging, dragInput, dragStart, startPos
