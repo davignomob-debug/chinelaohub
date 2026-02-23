@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - TOGGLE INTERFACE UPDATE
-    - Cards pretos com Toggles animados
-    - Botões de controle com Hover (Ciano/Vermelho)
-    - Sem nomes de terceiros, apenas CHINELÃO PREMIUM
+    🩴 CHINELÃO PREMIUM - ANTI-ESCAPE UPDATE
+    - Sistema de Arrastar Profissional (Não escapa do mouse)
+    - Toggles e Cards estilo Moderno
+    - Sem Chilli Hub / Apenas Chinelão Premium
 ]]
 
 local Players = game:GetService("Players")
@@ -10,6 +10,7 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
 local function GetSafeGui()
@@ -33,12 +34,44 @@ local COLORS = {
     HOVER_CLOSE = Color3.fromRGB(200, 0, 0)
 }
 
+-- [[ SISTEMA DE ARRASTAR BLINDADO ]] --
+local function makeDraggable(gui)
+    local dragging, dragInput, dragStart, startPos
+
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = gui.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    gui.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaPremium_Toggles"
+sg.Name = "ChinelaPremium_V5"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO RESTAURAR ]] --
+-- [[ BOTÃO MINIMIZADO (RESTAURAR) ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
 OpenBtn.Size = UDim2.fromOffset(60, 60)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, -30)
@@ -50,8 +83,7 @@ Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
-OpenText.Size = UDim2.new(1, 0, 1, 0)
-OpenText.BackgroundTransparency = 1
+OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1
 OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT
 OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
 
@@ -64,21 +96,18 @@ Main.BorderSizePixel = 0
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- Barra de Título
+-- Título
 local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(0, 250, 0, 50)
-Title.Position = UDim2.new(0, 20, 0, 0)
-Title.Text = "CHINELÃO PREMIUM"
-Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18
-Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Size = UDim2.new(0, 250, 0, 50); Title.Position = UDim2.new(0, 20, 0, 0)
+Title.Text = "CHINELÃO PREMIUM"; Title.TextColor3 = COLORS.TEXT
+Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- [[ CONTROLES ]] --
+-- [[ BOTÕES DE CONTROLE ]] --
 local function createControlBtn(text, pos, hoverColor)
     local btn = Instance.new("TextButton", Main)
     btn.Size = UDim2.fromOffset(35, 35); btn.Position = pos
     btn.BackgroundColor3 = COLORS.BTN_BG; btn.Text = text; btn.TextColor3 = COLORS.TEXT
-    btn.Font = Enum.Font.GothamBold; btn.TextSize = 20
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    btn.Font = Enum.Font.GothamBold; btn.TextSize = 20; Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
     btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play() end)
     btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.BTN_BG}):Play() end)
     return btn
@@ -88,117 +117,59 @@ local MinBtn = createControlBtn("—", UDim2.new(1, -90, 0, 10), COLORS.HOVER_MI
 local CloseBtn = createControlBtn("X", UDim2.new(1, -45, 0, 10), COLORS.HOVER_CLOSE)
 
 local function ToggleUI() Main.Visible = not Main.Visible; OpenBtn.Visible = not Main.Visible end
-MinBtn.MouseButton1Click:Connect(ToggleUI)
-OpenBtn.MouseButton1Click:Connect(ToggleUI)
+MinBtn.MouseButton1Click:Connect(ToggleUI); OpenBtn.MouseButton1Click:Connect(ToggleUI)
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
 -- [[ SIDEBAR ]] --
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 140, 1, -70)
-Sidebar.Position = UDim2.new(0, 15, 0, 60)
-Sidebar.BackgroundTransparency = 1
-local SideLayout = Instance.new("UIListLayout", Sidebar)
-SideLayout.Padding = UDim.new(0, 8)
+Sidebar.Size = UDim2.new(0, 140, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 60); Sidebar.BackgroundTransparency = 1
+Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
 
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -185, 1, -80)
-Container.Position = UDim2.new(0, 170, 0, 65)
-Container.BackgroundTransparency = 1
+Container.Size = UDim2.new(1, -185, 1, -80); Container.Position = UDim2.new(0, 170, 0, 65); Container.BackgroundTransparency = 1
 
 local function createPage()
-    local p = Instance.new("Frame", Container); p.Size = UDim2.new(1, 0, 1, 0)
-    p.BackgroundTransparency = 1; p.Visible = false; return p
+    local p = Instance.new("Frame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; return p
 end
-
 local pPlayer = createPage(); local pServers = createPage(); local pFly = createPage(); local pHelper = createPage()
 pPlayer.Visible = true
 
--- [[ FUNÇÃO PARA CRIAR CARD COM TOGGLE ]] --
+-- [[ FUNÇÃO TOGGLE ]] --
 local function createToggle(parent, text, callback)
-    local card = Instance.new("Frame", parent)
-    card.Size = UDim2.new(1, 0, 0, 50)
-    card.BackgroundColor3 = COLORS.CARD_BG
+    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, 0, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    
-    local label = Instance.new("TextLabel", card)
-    label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0)
-    label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14
-    label.BackgroundTransparency = 1; label.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local tglBG = Instance.new("TextButton", card)
-    tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10)
-    tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""
-    Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
-    
-    local circle = Instance.new("Frame", tglBG)
-    circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8)
-    circle.BackgroundColor3 = Color3.new(1,1,1)
-    Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
-    
+    local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0)
+    label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = Enum.TextXAlignment.Left
+    local tglBG = Instance.new("TextButton", card); tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10)
+    tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
+    local circle = Instance.new("Frame", tglBG); circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8)
+    circle.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
     local active = false
     tglBG.MouseButton1Click:Connect(function()
         active = not active
-        local targetPos = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        local targetCol = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
-        TweenService:Create(circle, TweenInfo.new(0.2), {Position = targetPos}):Play()
-        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = targetCol}):Play()
+        TweenService:Create(circle, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
+        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF}):Play()
         callback(active)
     end)
 end
 
--- [[ CONFIGURAÇÃO DAS ABAS ]] --
 local function createTab(name, page)
-    local b = Instance.new("TextButton", Sidebar)
-    b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG
-    b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 13
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG
+    b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 13; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function()
-        pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
-        page.Visible = true
+        pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false; page.Visible = true
     end)
 end
-
 createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- [[ FUNÇÕES ]] --
-local listPlayer = Instance.new("UIListLayout", pPlayer); listPlayer.Padding = UDim.new(0, 8)
-createToggle(pPlayer, "Instant Grab Brainrot", function(state)
-    if state then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end
-end)
+-- Funções
+Instance.new("UIListLayout", pPlayer).Padding = UDim.new(0, 8)
+createToggle(pPlayer, "Instant Grab Brainrot", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
 
-local listServ = Instance.new("UIListLayout", pServers); listServ.Padding = UDim.new(0, 8)
-createToggle(pServers, "Server Premium (Hop)", function(state)
-    if state then
-        local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")) end)
-        if success and result.data then
-            for _, s in ipairs(result.data) do
-                if s.playing < s.maxPlayers and s.id ~= game.JobId then TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id); break end
-            end
-        end
-    end
-end)
+Instance.new("UIListLayout", pHelper).Padding = UDim.new(0, 8)
+createToggle(pHelper, "Auto Load Script", function(s) end)
+createToggle(pHelper, "Run Auto-Loader", function(s) if s then loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() end end)
 
-local listFly = Instance.new("UIListLayout", pFly); listFly.Padding = UDim.new(0, 8)
-createToggle(pFly, "Enable Fly GUI V3", function(state)
-    if state then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end
-end)
-
-local listHelp = Instance.new("UIListLayout", pHelper); listHelp.Padding = UDim.new(0, 8)
-createToggle(pHelper, "Auto Load Script", function(state) end)
-createToggle(pHelper, "Run Auto-Loader", function(state)
-    if state then loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() end
-end)
-
--- Arrastar
-local function drag(f)
-    local d, s, sp
-    f.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then d = true; s = input.Position; sp = f.Position end end)
-    f.InputChanged:Connect(function(input)
-        if d and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - s
-            f.Position = UDim2.new(sp.X.Scale, sp.X.Offset + delta.X, sp.Y.Scale, sp.Y.Offset + delta.Y)
-        end
-    end)
-    game:GetService("UserInputService").InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then d = false end end)
-end
-drag(Main); drag(OpenBtn)
+-- Ativar Arrastar Seguro
+makeDraggable(Main)
+makeDraggable(OpenBtn)
