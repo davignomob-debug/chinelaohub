@@ -23,7 +23,7 @@ local COLORS = {
     TOGGLE_ON = Color3.fromRGB(34, 211, 238),
     TOGGLE_OFF = Color3.fromRGB(45, 55, 72),
     HOVER_RED = Color3.fromRGB(255, 60, 60),
-    NEON_GREEN = Color3.fromRGB(0, 255, 0) -- Cor do novo Slider
+    NEON_GREEN = Color3.fromRGB(0, 255, 0)
 }
 
 if parentGui:FindFirstChild("ChinelaoPremium_Final_V11") then
@@ -34,6 +34,10 @@ local sg = Instance.new("ScreenGui")
 sg.Name = "ChinelaoPremium_Final_V11"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
+
+-- [[ VARIÁVEIS DE ESTADO ]] --
+_G.WalkSpeedValue = 16
+_G.AutoPurchase = false
 
 -- [[ BOTÃO ABRIR ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
@@ -83,7 +87,7 @@ createControlBtn("-", 0, COLORS.ACCENT, function() Main.Visible = false; OpenBtn
 createControlBtn("X", 45, COLORS.HOVER_RED, function() sg:Destroy() end)
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 
--- SIDEBAR E PERFIL (Mantidos conforme V11)
+-- SIDEBAR
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 180, 1, -120); Sidebar.Position = UDim2.new(0, 0, 0, 60); Sidebar.BackgroundColor3 = COLORS.SIDEBAR; Sidebar.BackgroundTransparency = 0.6; Sidebar.ZIndex = 11
 Instance.new("UIListLayout", Sidebar).HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -109,40 +113,28 @@ local function createTab(name)
 end
 createTab("PLAYER"); createTab("FLY"); createTab("SERVERS")
 
--- [[ NOVO COMPONENTE: SLIDER (ESTILO IMAGEM) ]] --
+-- [[ COMPONENTE SLIDER ]] --
 local function createSlider(parent, text, min, max, callback)
     local card = Instance.new("Frame", parent)
-    card.Size = UDim2.new(1, -10, 0, 85); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    card.Size = UDim2.new(1, -10, 0, 85); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
     
     local title = Instance.new("TextLabel", card)
-    title.Text = "Speed Modifier"; title.Size = UDim2.new(0, 200, 0, 20); title.Position = UDim2.new(0, 15, 0, 8)
-    title.TextColor3 = COLORS.NEON_GREEN; title.Font = Enum.Font.GothamBold; title.TextSize = 14; title.BackgroundTransparency = 1; title.TextXAlignment = 0; title.ZIndex = 17
+    title.Text = "Speed Modifier"; title.Size = UDim2.new(0, 200, 0, 20); title.Position = UDim2.new(0, 15, 0, 8); title.TextColor3 = COLORS.NEON_GREEN; title.Font = Enum.Font.GothamBold; title.TextSize = 14; title.BackgroundTransparency = 1; title.TextXAlignment = 0; title.ZIndex = 17
 
     local name = Instance.new("TextLabel", card)
-    name.Text = text; name.Size = UDim2.new(0, 200, 0, 20); name.Position = UDim2.new(0, 15, 0, 30)
-    name.TextColor3 = COLORS.TEXT; name.Font = Enum.Font.GothamSemibold; name.TextSize = 14; name.BackgroundTransparency = 1; name.TextXAlignment = 0; name.ZIndex = 17
+    name.Text = text; name.Size = UDim2.new(0, 200, 0, 20); name.Position = UDim2.new(0, 15, 0, 30); name.TextColor3 = COLORS.TEXT; name.Font = Enum.Font.GothamSemibold; name.TextSize = 14; name.BackgroundTransparency = 1; name.TextXAlignment = 0; name.ZIndex = 17
 
     local valueLabel = Instance.new("TextLabel", card)
-    valueLabel.Text = "16 speed"; valueLabel.Size = UDim2.new(0, 100, 0, 20); valueLabel.Position = UDim2.new(1, -115, 0, 30)
-    valueLabel.TextColor3 = COLORS.NEON_GREEN; valueLabel.Font = Enum.Font.GothamBold; valueLabel.TextSize = 14; valueLabel.BackgroundTransparency = 1; valueLabel.TextXAlignment = 2; valueLabel.ZIndex = 17
+    valueLabel.Text = _G.WalkSpeedValue .. " speed"; valueLabel.Size = UDim2.new(0, 100, 0, 20); valueLabel.Position = UDim2.new(1, -115, 0, 30); valueLabel.TextColor3 = COLORS.NEON_GREEN; valueLabel.Font = Enum.Font.GothamBold; valueLabel.TextSize = 14; valueLabel.BackgroundTransparency = 1; valueLabel.TextXAlignment = 2; valueLabel.ZIndex = 17
 
     local sliderBg = Instance.new("Frame", card)
-    sliderBg.Size = UDim2.new(1, -30, 0, 4); sliderBg.Position = UDim2.new(0, 15, 0, 55); sliderBg.BackgroundColor3 = Color3.fromRGB(45, 55, 72); sliderBg.ZIndex = 17
-    Instance.new("UICorner", sliderBg)
+    sliderBg.Size = UDim2.new(1, -30, 0, 4); sliderBg.Position = UDim2.new(0, 15, 0, 55); sliderBg.BackgroundColor3 = Color3.fromRGB(45, 55, 72); sliderBg.ZIndex = 17; Instance.new("UICorner", sliderBg)
 
     local sliderFill = Instance.new("Frame", sliderBg)
-    sliderFill.Size = UDim2.new(0, 0, 1, 0); sliderFill.BackgroundColor3 = COLORS.NEON_GREEN; sliderFill.ZIndex = 18
-    Instance.new("UICorner", sliderFill)
+    sliderFill.Size = UDim2.new(0, 0, 1, 0); sliderFill.BackgroundColor3 = COLORS.NEON_GREEN; sliderFill.ZIndex = 18; Instance.new("UICorner", sliderFill)
 
     local button = Instance.new("TextButton", sliderBg)
-    button.Size = UDim2.fromOffset(16, 16); button.Position = UDim2.new(0, -8, 0.5, -8); button.BackgroundColor3 = Color3.new(1,1,1); button.Text = ""; button.ZIndex = 19
-    Instance.new("UICorner", button).CornerRadius = UDim.new(1, 0)
-    Instance.new("UIStroke", button).Thickness = 2
-
-    local desc = Instance.new("TextLabel", card)
-    desc.Text = "Speed changer isn't that so tuff?"; desc.Size = UDim2.new(1, 0, 0, 20); desc.Position = UDim2.new(0, 15, 0, 65)
-    desc.TextColor3 = Color3.fromRGB(150, 150, 150); desc.Font = Enum.Font.GothamMedium; desc.TextSize = 12; desc.BackgroundTransparency = 1; desc.TextXAlignment = 0; desc.ZIndex = 17
+    button.Size = UDim2.fromOffset(16, 16); button.Position = UDim2.new(0, -8, 0.5, -8); button.BackgroundColor3 = Color3.new(1,1,1); button.Text = ""; button.ZIndex = 19; Instance.new("UICorner", button).CornerRadius = UDim.new(1, 0)
 
     local dragging = false
     local function update()
@@ -150,15 +142,12 @@ local function createSlider(parent, text, min, max, callback)
         local sliderPos = sliderBg.AbsolutePosition.X
         local sliderWidth = sliderBg.AbsoluteSize.X
         local percent = math.clamp((inputPos - sliderPos) / sliderWidth, 0, 1)
-        
         sliderFill.Size = UDim2.new(percent, 0, 1, 0)
         button.Position = UDim2.new(percent, -8, 0.5, -8)
-        
         local val = math.floor(min + (max - min) * percent)
         valueLabel.Text = val .. " speed"
         callback(val)
     end
-
     button.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end end)
     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
     UserInputService.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then update() end end)
@@ -179,21 +168,32 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ AÇÕES ]] --
+-- [[ FUNÇÕES NA ABA PLAYER ]] --
 createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
 
--- ADICIONANDO O SLIDER DE VELOCIDADE (32 a 300)
 createSlider(pPlayer, "Walk Speed", 32, 300, function(v)
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = v
-    end
+    _G.WalkSpeedValue = v
 end)
 
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
 createToggle(pServer, "Rejoin Server", function(s) if s then TeleportService:Teleport(game.PlaceId, LocalPlayer) end end)
 
--- LÓGICA AUTO PURCHASE
-_G.AutoPurchase = false
+-- [[ LOOP PARA VELOCIDADE PERMANENTE ]] --
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        pcall(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                -- Se a velocidade do jogo for diferente da que você escolheu no slider, o script força de volta
+                if LocalPlayer.Character.Humanoid.WalkSpeed ~= _G.WalkSpeedValue then
+                    LocalPlayer.Character.Humanoid.WalkSpeed = _G.WalkSpeedValue
+                end
+            end
+        end)
+    end
+end)
+
+-- [[ LOOP AUTO PURCHASE ]] --
 task.spawn(function()
     while true do
         task.wait(0.1)
