@@ -25,47 +25,81 @@ local COLORS = {
     HOVER_RED = Color3.fromRGB(255, 60, 60)
 }
 
-if parentGui:FindFirstChild("ChinelaoPremium_Final_V12") then
-    parentGui:FindFirstChild("ChinelaoPremium_Final_V12"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_Final_V13") then
+    parentGui:FindFirstChild("ChinelaoPremium_Final_V13"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final_V12"
+sg.Name = "ChinelaoPremium_Final_V13"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO ABRIR PERSONALIZADO (LOGO CIANO) ]] --
+-- [[ FUNÇÃO DE ARRASTAR (VERSÃO REFORÇADA) ]] --
+local function makeDraggable(gui)
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = gui.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    gui.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+end
+
+-- [[ BOTÃO ABRIR PERSONALIZADO ]] --
 local OpenBtn = Instance.new("Frame", sg)
 OpenBtn.Size = UDim2.fromOffset(70, 85)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, -42)
 OpenBtn.BackgroundTransparency = 1
 OpenBtn.Visible = false
+makeDraggable(OpenBtn) -- Torna a logo arrastável
 
 local LogoImg = Instance.new("ImageLabel", OpenBtn)
 LogoImg.Size = UDim2.fromOffset(60, 60)
 LogoImg.Position = UDim2.new(0.5, -30, 0, 0)
 LogoImg.BackgroundColor3 = COLORS.BG
-LogoImg.Image = "rbxassetid://131109000100412" -- Logo aproximada da Tech Perfect
-LogoImg.ImageColor3 = COLORS.ACCENT -- Muda Verde para Ciano
+LogoImg.Image = "rbxassetid://131109000100412"
+LogoImg.ImageColor3 = COLORS.ACCENT
 Instance.new("UICorner", LogoImg).CornerRadius = UDim.new(0, 12)
 local LogoStroke = Instance.new("UIStroke", LogoImg)
 LogoStroke.Color = COLORS.ACCENT; LogoStroke.Thickness = 2
 
 local OpenLabel = Instance.new("TextLabel", OpenBtn)
-OpenLabel.Size = UDim2.new(1, 0, 0, 20)
-OpenLabel.Position = UDim2.new(0, 0, 1, -20)
-OpenLabel.BackgroundTransparency = 1
-OpenLabel.Text = "ChinelãoHub"
-OpenLabel.TextColor3 = COLORS.ACCENT
-OpenLabel.Font = Enum.Font.GothamBold
-OpenLabel.TextSize = 10
+OpenLabel.Size = UDim2.new(1, 0, 0, 20); OpenLabel.Position = UDim2.new(0, 0, 1, -20)
+OpenLabel.BackgroundTransparency = 1; OpenLabel.Text = "ChinelãoHub"; OpenLabel.TextColor3 = COLORS.ACCENT
+OpenLabel.Font = Enum.Font.GothamBold; OpenLabel.TextSize = 10
 
 local OpenTrigger = Instance.new("TextButton", OpenBtn)
-OpenTrigger.Size = UDim2.new(1, 0, 1, 0)
-OpenTrigger.BackgroundTransparency = 1
-OpenTrigger.Text = ""
+OpenTrigger.Size = UDim2.new(1, 0, 1, 0); OpenTrigger.BackgroundTransparency = 1; OpenTrigger.Text = ""
 
--- [[ FRAME PRINCIPAL (TAMANHO EXATO TECH PERFECT) ]] --
+-- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
 Main.Size = UDim2.fromOffset(720, 480)
@@ -75,6 +109,7 @@ Main.ZIndex = 10
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Color = COLORS.STROKE; MainStroke.Thickness = 2
+makeDraggable(Main) -- Torna o painel arrastável
 
 -- TOP BAR
 local TopBar = Instance.new("Frame", Main)
@@ -84,18 +119,15 @@ local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 25, 0, 0); Title.BackgroundTransparency = 1
 Title.Text = "CHINELÃO PREMIUM"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.TextXAlignment = 0; Title.ZIndex = 12
 
--- BOTÕES DE CONTROLE (- e X)
+-- BOTÕES DE CONTROLE
 local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 100, 1, 0); Controls.Position = UDim2.new(1, -110, 0, 0); Controls.BackgroundTransparency = 1
 
 local function createControlBtn(txt, pos, hoverColor, callback)
     local b = Instance.new("TextButton", Controls)
-    b.Size = UDim2.fromOffset(35, 35) -- Tamanho ajeitado
-    b.Position = UDim2.new(0, pos, 0.5, -17)
-    b.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-    b.Text = txt; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 16; b.ZIndex = 15
+    b.Size = UDim2.fromOffset(35, 35); b.Position = UDim2.new(0, pos, 0.5, -17)
+    b.BackgroundColor3 = Color3.fromRGB(25, 30, 40); b.Text = txt; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 16; b.ZIndex = 15
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    
     b.MouseEnter:Connect(function() b.BackgroundColor3 = hoverColor end)
     b.MouseLeave:Connect(function() b.BackgroundColor3 = Color3.fromRGB(25, 30, 40) end)
     b.MouseButton1Click:Connect(callback)
@@ -105,28 +137,24 @@ createControlBtn("-", 0, COLORS.ACCENT, function() Main.Visible = false; OpenBtn
 createControlBtn("X", 45, COLORS.HOVER_RED, function() sg:Destroy() end)
 OpenTrigger.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 
--- [[ SIDEBAR ]] --
+-- SIDEBAR E PERFIL (ESTÉTICA IGUAL TECH PERFECT)
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 190, 1, -130); Sidebar.Position = UDim2.new(0, 0, 0, 65); Sidebar.BackgroundColor3 = COLORS.SIDEBAR; Sidebar.BackgroundTransparency = 0.5; Sidebar.ZIndex = 11
 local SideLayout = Instance.new("UIListLayout", Sidebar); SideLayout.Padding = UDim.new(0, 10); SideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ PERFIL DINÂMICO ]] --
 local UserProfile = Instance.new("Frame", Main)
 UserProfile.Size = UDim2.new(0, 180, 0, 65); UserProfile.Position = UDim2.new(0, 5, 1, -75); UserProfile.BackgroundTransparency = 1; UserProfile.ZIndex = 20
 
 local pfp = Instance.new("ImageLabel", UserProfile)
-pfp.Size = UDim2.fromOffset(50, 50); pfp.Position = UDim2.new(0, 12, 0.5, -25); pfp.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
-pfp.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=150&h=150"; pfp.ZIndex = 21; Instance.new("UICorner", pfp).CornerRadius = UDim.new(1, 0)
+pfp.Size = UDim2.fromOffset(50, 50); pfp.Position = UDim2.new(0, 12, 0.5, -25); pfp.Image = "rbxthumb://type=AvatarHeadShot&id=" .. LocalPlayer.UserId .. "&w=150&h=150"; pfp.ZIndex = 21; Instance.new("UICorner", pfp).CornerRadius = UDim.new(1, 0)
 
 local NameLbl = Instance.new("TextLabel", UserProfile)
-NameLbl.Size = UDim2.new(1, -75, 0, 20); NameLbl.Position = UDim2.new(0, 70, 0.2, 0); NameLbl.BackgroundTransparency = 1
-NameLbl.Text = LocalPlayer.DisplayName; NameLbl.TextColor3 = COLORS.TEXT; NameLbl.Font = Enum.Font.GothamBold; NameLbl.TextSize = 14; NameLbl.TextXAlignment = 0; NameLbl.ZIndex = 21
+NameLbl.Size = UDim2.new(1, -75, 0, 20); NameLbl.Position = UDim2.new(0, 70, 0.2, 0); NameLbl.BackgroundTransparency = 1; NameLbl.Text = LocalPlayer.DisplayName; NameLbl.TextColor3 = COLORS.TEXT; NameLbl.Font = Enum.Font.GothamBold; NameLbl.TextSize = 14; NameLbl.TextXAlignment = 0; NameLbl.ZIndex = 21
 
 local PremLbl = Instance.new("TextLabel", UserProfile)
-PremLbl.Size = UDim2.new(1, -75, 0, 15); PremLbl.Position = UDim2.new(0, 70, 0.55, 0); PremLbl.BackgroundTransparency = 1
-PremLbl.Text = "Premium User"; PremLbl.TextColor3 = COLORS.ACCENT; PremLbl.Font = Enum.Font.GothamMedium; PremLbl.TextSize = 12; PremLbl.TextXAlignment = 0; PremLbl.ZIndex = 21
+PremLbl.Size = UDim2.new(1, -75, 0, 15); PremLbl.Position = UDim2.new(0, 70, 0.55, 0); PremLbl.BackgroundTransparency = 1; PremLbl.Text = "Premium User"; PremLbl.TextColor3 = COLORS.ACCENT; PremLbl.Font = Enum.Font.GothamMedium; PremLbl.TextSize = 12; PremLbl.TextXAlignment = 0; PremLbl.ZIndex = 21
 
--- [[ CONTAINER DE CONTEÚDO ]] --
+-- CONTAINER E ABAS
 local Container = Instance.new("Frame", Main)
 Container.Size = UDim2.new(1, -230, 1, -90); Container.Position = UDim2.new(0, 210, 0, 75); Container.BackgroundTransparency = 1; Container.ZIndex = 11
 
@@ -148,7 +176,7 @@ end
 
 createTab("PLAYER"); createTab("FLY"); createTab("SERVERS")
 
--- [[ COMPONENTES ]] --
+-- [[ TOGGLE COMPONENT ]] --
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 60); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 10)
     local l = Instance.new("TextLabel", card); l.Text = text; l.Size = UDim2.new(1, -80, 1, 0); l.Position = UDim2.new(0, 20, 0, 0); l.TextColor3 = COLORS.TEXT; l.Font = Enum.Font.GothamSemibold; l.TextSize = 15; l.BackgroundTransparency = 1; l.TextXAlignment = 0; l.ZIndex = 17
@@ -163,7 +191,7 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ LÓGICA DAS FUNÇÕES ]] --
+-- [[ LÓGICA ]] --
 _G.AutoPurchase = false
 task.spawn(function()
     while task.wait(0.1) do
@@ -190,13 +218,3 @@ createToggle(pServer, "Rejoin Premium Server", function(s)
         if servers and servers.data then TeleportService:TeleportToPlaceInstance(game.PlaceId, servers.data[1].id) end
     end
 end)
-
--- DRAG
-local function makeDraggable(gui)
-    local dragging, dragInput, dragStart, startPos
-    gui.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = gui.Position end end)
-    gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
-    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
-    UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-end
-makeDraggable(Main); makeDraggable(OpenBtn)
