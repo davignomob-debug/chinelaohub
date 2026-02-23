@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELAO PREMIUM - FULL STABLE VERSION
+    🩴 CHINELAO PREMIUM - ORIGINAL INTERFACE
     - Abas: PLAYER | SERVERS | FLY | HELPER
-    - Funções: Minimizar, Fechar, Draggable
-    - Estilo: Chilli Hub Deep Sea
+    - Visual: Chilli Hub Original (Deep Blue Gradient)
+    - Função: Minimizar (—) e Fechar (X)
 ]]
 
 local Players = game:GetService("Players")
@@ -10,9 +10,10 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
+
 local LocalPlayer = Players.LocalPlayer
 
--- [[ PROTEÇÃO DE UI ]] --
+-- [[ FUNÇÃO PARA UI PROTEGIDA ]] --
 local function GetSafeGui()
     if gethui then return gethui() end
     if CoreGui then return CoreGui end
@@ -21,14 +22,14 @@ end
 
 local parentGui = GetSafeGui()
 
--- [[ PALETA DE CORES ]] --
+-- [[ CORES CHILLI HUB ORIGINAIS ]] --
 local COLORS = {
     BG = Color3.fromRGB(16, 24, 39),
     GRAD_1 = Color3.fromRGB(12, 18, 32),
     GRAD_2 = Color3.fromRGB(21, 30, 47),
     GRAD_3 = Color3.fromRGB(10, 82, 120),
     STROKE = Color3.fromRGB(56, 189, 248),
-    TEXT = Color3.fromRGB(255, 255, 255),
+    TEXT = Color3.fromRGB(241, 245, 249),
     ACCENT = Color3.fromRGB(34, 211, 238),
     BTN = Color3.fromRGB(30, 41, 59),
     CARD = Color3.fromRGB(15, 20, 35)
@@ -36,11 +37,11 @@ local COLORS = {
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final"
+sg.Name = "ChinelaoPremium_Original"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- Botão Flutuante (Minimizado)
+-- Botão Flutuante (Aparece ao minimizar)
 local OpenBtn = Instance.new("TextButton", sg)
 OpenBtn.Size = UDim2.fromOffset(50, 50)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, -25)
@@ -51,15 +52,17 @@ OpenBtn.Font = Enum.Font.GothamBold
 OpenBtn.TextSize = 20
 OpenBtn.Visible = false
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
+local OpenStroke = Instance.new("UIStroke", OpenBtn)
+OpenStroke.Color = COLORS.ACCENT
+OpenStroke.Thickness = 2
 
--- Frame Principal
+-- Frame Principal (Interface que você gosta)
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.fromOffset(580, 350)
-Main.Position = UDim2.new(0.5, -290, 0.5, -175)
+Main.Size = UDim2.fromOffset(550, 350)
+Main.Position = UDim2.new(0.5, -275, 0.5, -175)
 Main.BackgroundColor3 = COLORS.BG
 Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 20)
 
 local BgGrad = Instance.new("UIGradient", Main)
 BgGrad.Rotation = 35
@@ -68,16 +71,19 @@ BgGrad.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0.55, COLORS.GRAD_2),
     ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
 })
-Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ BARRA DE TÍTULO & CONTROLES ]] --
+local Glow = Instance.new("UIStroke", Main)
+Glow.Thickness = 2
+Glow.Color = COLORS.STROKE
+
+-- [[ CONTROLES SUPERIORES ]] --
 local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(0, 200, 0, 40)
+Title.Size = UDim2.new(0, 300, 0, 40)
 Title.Position = UDim2.new(0, 20, 0, 5)
 Title.Text = "CHINELAO PREMIUM"
 Title.TextColor3 = COLORS.TEXT
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 16
+Title.TextSize = 18
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -86,33 +92,39 @@ local function ToggleUI()
     OpenBtn.Visible = not Main.Visible
 end
 
+-- Botão Minimizar (—)
 local MinBtn = Instance.new("TextButton", Main)
 MinBtn.Size = UDim2.fromOffset(30, 30)
-MinBtn.Position = UDim2.new(1, -75, 0, 8)
+MinBtn.Position = UDim2.new(1, -75, 0, 10)
 MinBtn.Text = "—"
 MinBtn.TextColor3 = COLORS.TEXT
 MinBtn.BackgroundTransparency = 1
+MinBtn.TextSize = 20
 MinBtn.MouseButton1Click:Connect(ToggleUI)
 OpenBtn.MouseButton1Click:Connect(ToggleUI)
 
+-- Botão Fechar (X)
 local CloseBtn = Instance.new("TextButton", Main)
 CloseBtn.Size = UDim2.fromOffset(30, 30)
-CloseBtn.Position = UDim2.new(1, -40, 0, 8)
+CloseBtn.Position = UDim2.new(1, -40, 0, 10)
 CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseBtn.TextColor3 = Color3.new(1, 0, 0)
 CloseBtn.BackgroundTransparency = 1
+CloseBtn.TextSize = 20
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- [[ SIDEBAR ]] --
+-- [[ SIDEBAR LATERAL ]] --
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 130, 1, -60)
-Sidebar.Position = UDim2.new(0, 15, 0, 50)
+Sidebar.Size = UDim2.new(0, 140, 1, -60)
+Sidebar.Position = UDim2.new(0, 15, 0, 45)
 Sidebar.BackgroundTransparency = 1
-Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
+local UIList = Instance.new("UIListLayout", Sidebar)
+UIList.Padding = UDim.new(0, 10)
 
+-- [[ CONTAINER DE PÁGINAS ]] --
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -170, 1, -70)
-Container.Position = UDim2.new(0, 155, 0, 55)
+Container.Size = UDim2.new(1, -185, 1, -65)
+Container.Position = UDim2.new(0, 170, 0, 50)
 Container.BackgroundTransparency = 1
 
 local function createPage()
@@ -123,55 +135,52 @@ local function createPage()
     return p
 end
 
-local pPlayer = createPage()
-local pServers = createPage()
-local pFly = createPage()
-local pHelper = createPage()
-pPlayer.Visible = true
-
-local function createTab(name, page)
+local function createTabBtn(name)
     local b = Instance.new("TextButton", Sidebar)
-    b.Size = UDim2.new(1, 0, 0, 35)
+    b.Size = UDim2.new(1, 0, 0, 38)
     b.BackgroundColor3 = COLORS.BTN
     b.Text = name
     b.TextColor3 = COLORS.TEXT
     b.Font = Enum.Font.GothamBold
-    b.TextSize = 12
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-    
-    b.MouseButton1Click:Connect(function()
-        pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
-        page.Visible = true
-    end)
+    b.TextSize = 13
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIStroke", b).Color = COLORS.STROKE
+    return b
 end
 
-createTab("PLAYER", pPlayer)
-createTab("SERVERS", pServers)
-createTab("FLY", pFly)
-createTab("HELPER", pHelper)
+local pPlayer = createPage()
+local pServers = createPage()
+local pFly = createPage()
+local pHelper = createPage()
 
--- [[ CONTEÚDO DAS ABAS ]] --
+local btnPlayer = createTabBtn("PLAYER")
+local btnServers = createTabBtn("SERVERS")
+local btnFly = createTabBtn("FLY")
+local btnHelper = createTabBtn("HELPER")
 
--- PLAYER
-local btnGrab = Instance.new("TextButton", pPlayer)
-btnGrab.Size = UDim2.new(1, 0, 0, 50)
-btnGrab.BackgroundColor3 = COLORS.ACCENT
-btnGrab.Text = "INSTANT GRAB BRAINROT"
-btnGrab.TextColor3 = COLORS.BG
-btnGrab.Font = Enum.Font.GothamBlack
-Instance.new("UICorner", btnGrab)
-btnGrab.MouseButton1Click:Connect(function()
+-- [[ CONTEÚDOS ]] --
+pPlayer.Visible = true
+
+-- ABA PLAYER
+local bGrab = Instance.new("TextButton", pPlayer)
+bGrab.Size = UDim2.new(1, 0, 0, 55)
+bGrab.BackgroundColor3 = COLORS.ACCENT
+bGrab.Text = "INSTANT GRAB BRAINROT"
+bGrab.Font = Enum.Font.GothamBlack
+bGrab.TextColor3 = COLORS.BG
+Instance.new("UICorner", bGrab)
+bGrab.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))()
 end)
 
--- SERVERS
-local btnHop = Instance.new("TextButton", pServers)
-btnHop.Size = UDim2.new(1, 0, 0, 50)
-btnHop.BackgroundColor3 = Color3.fromRGB(140, 225, 0)
-btnHop.Text = "SERVER PREMIUM (HOP)"
-btnHop.Font = Enum.Font.GothamBlack
-Instance.new("UICorner", btnHop)
-btnHop.MouseButton1Click:Connect(function()
+-- ABA SERVERS
+local bHop = Instance.new("TextButton", pServers)
+bHop.Size = UDim2.new(1, 0, 0, 55)
+bHop.BackgroundColor3 = Color3.fromRGB(140, 225, 0)
+bHop.Text = "SERVER PREMIUM (HOP)"
+bHop.Font = Enum.Font.GothamBlack
+Instance.new("UICorner", bHop)
+bHop.MouseButton1Click:Connect(function()
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
@@ -185,61 +194,72 @@ btnHop.MouseButton1Click:Connect(function()
     end
 end)
 
--- FLY
-local btnFly = Instance.new("TextButton", pFly)
-btnFly.Size = UDim2.new(1, 0, 0, 50)
-btnFly.BackgroundColor3 = COLORS.ACCENT
-btnFly.Text = "OPEN FLY GUI V3"
-btnFly.Font = Enum.Font.GothamBlack
-Instance.new("UICorner", btnFly)
-btnFly.MouseButton1Click:Connect(function()
+-- ABA FLY
+local bFly = Instance.new("TextButton", pFly)
+bFly.Size = UDim2.new(1, 0, 0, 55)
+bFly.BackgroundColor3 = COLORS.ACCENT
+bFly.Text = "EXECUTAR FLY GUI V3"
+bFly.Font = Enum.Font.GothamBlack
+Instance.new("UICorner", bFly)
+bFly.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))()
 end)
 
--- HELPER (ESTILO TOGGLE)
+-- ABA HELPER (LAYOUT SOLICITADO)
 local hCard = Instance.new("Frame", pHelper)
 hCard.Size = UDim2.new(1, 0, 0, 60)
 hCard.BackgroundColor3 = COLORS.CARD
 Instance.new("UICorner", hCard)
+local hText = Instance.new("TextLabel", hCard)
+hText.Text = "Auto Load Script"
+hText.Size = UDim2.new(1, -15, 1, 0)
+hText.Position = UDim2.new(0, 15, 0, 0)
+hText.TextColor3 = COLORS.TEXT
+hText.Font = Enum.Font.GothamBold
+hText.BackgroundTransparency = 1
+hText.TextXAlignment = Enum.TextXAlignment.Left
 
-local hLab = Instance.new("TextLabel", hCard)
-hLab.Text = "Auto Load Script"
-hLab.Size = UDim2.new(1, -70, 1, 0)
-hLab.Position = UDim2.new(0, 15, 0, 0)
-hLab.TextColor3 = COLORS.TEXT
-hLab.BackgroundTransparency = 1
-hLab.TextXAlignment = Enum.TextXAlignment.Left
-hLab.Font = Enum.Font.GothamBold
-
-local hRun = Instance.new("TextButton", pHelper)
-hRun.Size = UDim2.new(1, 0, 0, 50)
-hRun.Position = UDim2.new(0, 0, 0, 70)
-hRun.BackgroundColor3 = COLORS.CARD
-hRun.Text = "Run Auto-Loader"
-hRun.TextColor3 = COLORS.ACCENT
-hRun.Font = Enum.Font.GothamBold
-Instance.new("UICorner", hRun)
-hRun.MouseButton1Click:Connect(function()
+local bRun = Instance.new("TextButton", pHelper)
+bRun.Size = UDim2.new(1, 0, 0, 50)
+bRun.Position = UDim2.new(0, 0, 0, 70)
+bRun.BackgroundColor3 = COLORS.CARD
+bRun.Text = "Run Auto-Loader"
+bRun.TextColor3 = COLORS.ACCENT
+bRun.Font = Enum.Font.GothamBold
+Instance.new("UICorner", bRun)
+bRun.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))()
 end)
 
+-- [[ NAVEGAÇÃO ]] --
+local function openTab(page, btn)
+    pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
+    btnPlayer.BackgroundColor3 = COLORS.BTN; btnServers.BackgroundColor3 = COLORS.BTN; btnFly.BackgroundColor3 = COLORS.BTN; btnHelper.BackgroundColor3 = COLORS.BTN
+    page.Visible = true
+    btn.BackgroundColor3 = COLORS.ACCENT
+    btn.TextColor3 = COLORS.BG
+end
+
+btnPlayer.MouseButton1Click:Connect(function() openTab(pPlayer, btnPlayer) end)
+btnServers.MouseButton1Click:Connect(function() openTab(pServers, btnServers) end)
+btnFly.MouseButton1Click:Connect(function() openTab(pFly, btnFly) end)
+btnHelper.MouseButton1Click:Connect(function() openTab(pHelper, btnHelper) end)
+
 -- [[ DRAGGABLE ]] --
-local function makeDraggable(frame)
-    local dragging, dragInput, dragStart, startPos
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = input.Position; startPos = frame.Position
-        end
+local function drag(f)
+    local d, i, s, sp
+    f.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then d = true; s = input.Position; sp = f.Position end
     end)
-    frame.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    f.InputChanged:Connect(function(input)
+        if d and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - s
+            f.Position = UDim2.new(sp.X.Scale, sp.X.Offset + delta.X, sp.Y.Scale, sp.Y.Offset + delta.Y)
         end
     end)
     game:GetService("UserInputService").InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then d = false end
     end)
 end
-makeDraggable(Main)
-makeDraggable(OpenBtn)
+drag(Main)
+drag(OpenBtn)
