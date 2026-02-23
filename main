@@ -1,36 +1,16 @@
 --[[ 
-    🩴 CHINELAO PREMIUM - ULTIMATE HELPER EDITION
-    - Abas: PLAYER | SERVERS | FLY | HELPER
-    - Helper: Auto-Loader Xeno & Chilli Discord
-    - Visual: Chilli Hub Deep Sea
+    🩴 CHINELAO PREMIUM - HELPER UPDATE
+    - Interface: Chilli Style (Sidebar + Cards)
+    - Aba Helper: Toggle Auto Load + Run Button
 ]]
 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
-
--- [[ FUNÇÃO CHECK EXECUTOR (CONFORME SEU PEDIDO) ]] --
-local function checkExecutor()
-    local execName = "unknown"
-    if identifyexecutor then
-        execName = tostring(identifyexecutor())
-    elseif getexecutorname then
-        execName = tostring(getexecutorname())
-    end
-    return string.find(string.lower(execName), "xeno")
-end
-
--- Auto-carregamento se for Xeno
-if checkExecutor() then
-    task.spawn(function()
-        pcall(function()
-            loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))()
-        end)
-    end)
-end
 
 -- [[ FUNÇÃO PARA UI PROTEGIDA ]] --
 local function GetSafeGui()
@@ -41,55 +21,56 @@ end
 
 local parentGui = GetSafeGui()
 
--- [[ PALETA DE CORES ]] --
+-- [[ CORES ]] --
 local COLORS = {
-    BG = Color3.fromRGB(16, 24, 39),
-    GRAD_1 = Color3.fromRGB(12, 18, 32),
-    GRAD_2 = Color3.fromRGB(21, 30, 47),
-    GRAD_3 = Color3.fromRGB(10, 82, 120),
-    STROKE = Color3.fromRGB(56, 189, 248),
-    TEXT = Color3.fromRGB(241, 245, 249),
-    ACCENT = Color3.fromRGB(34, 211, 238),
-    BTN = Color3.fromRGB(30, 41, 59)
+    BG = Color3.fromRGB(5, 5, 10),
+    SIDEBAR = Color3.fromRGB(10, 15, 25),
+    CARD = Color3.fromRGB(15, 20, 35),
+    ACCENT = Color3.fromRGB(56, 189, 248),
+    TEXT = Color3.fromRGB(255, 255, 255),
+    TOGGLE_ON = Color3.fromRGB(56, 189, 248),
+    TOGGLE_OFF = Color3.fromRGB(40, 50, 70)
 }
+
+-- [[ VARIÁVEIS DE ESTADO ]] --
+local AutoLoadEnabled = false
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final"
+sg.Name = "ChinelaoPremium_HelperUpdate"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.fromOffset(550, 350)
-Main.Position = UDim2.new(0.5, -275, 0.5, -175)
+Main.Size = UDim2.fromOffset(580, 350)
+Main.Position = UDim2.new(0.5, -290, 0.5, -175)
 Main.BackgroundColor3 = COLORS.BG
 Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 20)
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
-local BgGrad = Instance.new("UIGradient", Main)
-BgGrad.Rotation = 35
-BgGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0.00, COLORS.GRAD_1),
-    ColorSequenceKeypoint.new(0.55, COLORS.GRAD_2),
-    ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
-})
-local Glow = Instance.new("UIStroke", Main)
-Glow.Thickness = 2
-Glow.Color = COLORS.STROKE
-Glow.Transparency = 0.2
+-- Barra Superior
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(0, 200, 0, 40)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Text = "CHINELAO PREMIUM"
+Title.TextColor3 = COLORS.ACCENT
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- [[ SIDEBAR ]] --
+-- Sidebar
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 140, 1, -60)
-Sidebar.Position = UDim2.new(0, 15, 0, 45)
+Sidebar.Size = UDim2.new(0, 130, 1, -50)
+Sidebar.Position = UDim2.new(0, 10, 0, 40)
 Sidebar.BackgroundTransparency = 1
-local UIList = Instance.new("UIListLayout", Sidebar)
-UIList.Padding = UDim.new(0, 8)
+local Layout = Instance.new("UIListLayout", Sidebar)
+Layout.Padding = UDim.new(0, 8)
 
--- [[ CONTAINER DE PÁGINAS ]] --
+-- Container de Páginas
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -185, 1, -65)
-Container.Position = UDim2.new(0, 170, 0, 50)
+Container.Size = UDim2.new(1, -160, 1, -50)
+Container.Position = UDim2.new(0, 150, 0, 40)
 Container.BackgroundTransparency = 1
 
 local function createPage()
@@ -100,132 +81,120 @@ local function createPage()
     return p
 end
 
-local function createTabBtn(name)
-    local b = Instance.new("TextButton", Sidebar)
-    b.Size = UDim2.new(1, 0, 0, 35)
-    b.BackgroundColor3 = COLORS.BTN
-    b.Text = name
-    b.TextColor3 = COLORS.TEXT
-    b.Font = Enum.Font.GothamBold
-    b.TextSize = 12
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", b).Color = COLORS.STROKE
-    return b
-end
-
 local PagePlayer = createPage()
 local PageServers = createPage()
 local PageFly = createPage()
 local PageHelper = createPage()
+PageHelper.Visible = true -- Começar na Helper para você ver o novo visual
 
-local btnPlayer = createTabBtn("PLAYER")
-local btnServers = createTabBtn("SERVERS")
-local btnFly = createTabBtn("FLY")
-local btnHelper = createTabBtn("HELPER")
-
--- [[ CONTEÚDO HELPER ]] --
-local HelperBtn = Instance.new("TextButton", PageHelper)
-HelperBtn.Size = UDim2.new(1, 0, 0, 50)
-HelperBtn.BackgroundColor3 = COLORS.ACCENT
-HelperBtn.Text = "RUN AUTO-LOADER (XENO)"
-HelperBtn.Font = Enum.Font.GothamBlack
-HelperBtn.TextColor3 = COLORS.BG
-Instance.new("UICorner", HelperBtn)
-
-HelperBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))()
-end)
-
-local HelpText = Instance.new("TextLabel", PageHelper)
-HelpText.Size = UDim2.new(1, 0, 0, 60)
-HelpText.Position = UDim2.new(0, 0, 0, 60)
-HelpText.Text = "Esta aba verifica seu executor e carrega os scripts necessários automaticamente."
-HelpText.TextColor3 = COLORS.TEXT
-HelpText.Font = Enum.Font.Gotham
-HelpText.BackgroundTransparency = 1
-HelpText.TextWrapped = true
-
--- [[ ABA PLAYER: INSTANT GRAB ]] --
-PagePlayer.Visible = true
-local GrabBtn = Instance.new("TextButton", PagePlayer)
-GrabBtn.Size = UDim2.new(1, 0, 0, 50)
-GrabBtn.BackgroundColor3 = COLORS.ACCENT
-GrabBtn.Text = "INSTANT GRAB BRAINROT"
-GrabBtn.Font = Enum.Font.GothamBlack
-GrabBtn.TextColor3 = COLORS.BG
-Instance.new("UICorner", GrabBtn)
-GrabBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))()
-end)
-
--- [[ ABA SERVERS: PREMIUM ]] --
-local ServerBtn = Instance.new("TextButton", PageServers)
-ServerBtn.Size = UDim2.new(1, 0, 0, 50)
-ServerBtn.BackgroundColor3 = Color3.fromRGB(140, 225, 0)
-ServerBtn.Text = "SERVER PREMIUM (HOP)"
-ServerBtn.Font = Enum.Font.GothamBlack
-ServerBtn.TextColor3 = COLORS.BG
-Instance.new("UICorner", ServerBtn)
-ServerBtn.MouseButton1Click:Connect(function()
-    local success, result = pcall(function()
-        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+-- Botões Sidebar
+local function createTabBtn(name, page)
+    local btn = Instance.new("TextButton", Sidebar)
+    btn.Size = UDim2.new(1, 0, 0, 35)
+    btn.BackgroundColor3 = COLORS.SIDEBAR
+    btn.Text = name
+    btn.TextColor3 = COLORS.TEXT
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    
+    btn.MouseButton1Click:Connect(function()
+        for _, p in pairs(Container:GetChildren()) do p.Visible = false end
+        page.Visible = true
     end)
-    if success and result.data then
-        for _, s in ipairs(result.data) do
-            if s.playing < s.maxPlayers and s.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id)
-                break
-            end
-        end
+    return btn
+end
+
+createTabBtn("PLAYER", PagePlayer)
+createTabBtn("SERVERS", PageServers)
+createTabBtn("FLY", PageFly)
+local btnHelper = createTabBtn("HELPER", PageHelper)
+btnHelper.BackgroundColor3 = COLORS.ACCENT
+btnHelper.TextColor3 = COLORS.BG
+
+-- [[ CONTEÚDO ABA HELPER (IGUAL À IMAGEM) ]] --
+local HelperTitle = Instance.new("TextLabel", PageHelper)
+HelperTitle.Text = "HELPER"
+HelperTitle.Size = UDim2.new(0, 100, 0, 30)
+HelperTitle.TextColor3 = COLORS.ACCENT
+HelperTitle.Font = Enum.Font.GothamBold
+HelperTitle.TextSize = 18
+HelperTitle.BackgroundTransparency = 1
+HelperTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Card do Auto Load
+local AutoLoadCard = Instance.new("Frame", PageHelper)
+AutoLoadCard.Size = UDim2.new(1, -10, 0, 60)
+AutoLoadCard.Position = UDim2.new(0, 0, 0, 40)
+AutoLoadCard.BackgroundColor3 = COLORS.CARD
+Instance.new("UICorner", AutoLoadCard)
+
+local AutoLoadText = Instance.new("TextLabel", AutoLoadCard)
+AutoLoadText.Text = "Auto Load Script"
+AutoLoadText.Size = UDim2.new(0, 200, 1, 0)
+AutoLoadText.Position = UDim2.new(0, 15, 0, 0)
+AutoLoadText.TextColor3 = COLORS.TEXT
+AutoLoadText.Font = Enum.Font.GothamSemibold
+AutoLoadText.TextSize = 16
+AutoLoadText.BackgroundTransparency = 1
+AutoLoadText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Toggle (Interruptor)
+local ToggleBG = Instance.new("TextButton", AutoLoadCard)
+ToggleBG.Size = UDim2.fromOffset(45, 22)
+ToggleBG.Position = UDim2.new(1, -60, 0.5, -11)
+ToggleBG.BackgroundColor3 = COLORS.TOGGLE_OFF
+ToggleBG.Text = ""
+Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
+
+local ToggleCircle = Instance.new("Frame", ToggleBG)
+ToggleCircle.Size = UDim2.fromOffset(18, 18)
+ToggleCircle.Position = UDim2.new(0, 2, 0.5, -9)
+ToggleCircle.BackgroundColor3 = COLORS.TEXT
+Instance.new("UICorner", ToggleCircle).CornerRadius = UDim.new(1, 0)
+
+ToggleBG.MouseButton1Click:Connect(function()
+    AutoLoadEnabled = not AutoLoadEnabled
+    local targetPos = AutoLoadEnabled and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
+    local targetColor = AutoLoadEnabled and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
+    
+    TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = targetPos}):Play()
+    TweenService:Create(ToggleBG, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+    
+    if AutoLoadEnabled then
+        print("Auto Load Ativado")
     end
 end)
 
--- [[ ABA FLY ]] --
-local FlyBtn = Instance.new("TextButton", PageFly)
-FlyBtn.Size = UDim2.new(1, 0, 0, 50)
-FlyBtn.BackgroundColor3 = COLORS.ACCENT
-FlyBtn.Text = "OPEN FLY GUI V3"
-FlyBtn.Font = Enum.Font.GothamBlack
-FlyBtn.TextColor3 = COLORS.BG
-Instance.new("UICorner", FlyBtn)
-FlyBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))()
+-- Botão Run Auto
+local RunAutoBtn = Instance.new("TextButton", PageHelper)
+RunAutoBtn.Size = UDim2.new(1, -10, 0, 50)
+RunAutoBtn.Position = UDim2.new(0, 0, 0, 110)
+RunAutoBtn.BackgroundColor3 = COLORS.CARD
+RunAutoBtn.Text = "Run Auto-"
+RunAutoBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+RunAutoBtn.Font = Enum.Font.GothamSemibold
+RunAutoBtn.TextSize = 16
+RunAutoBtn.TextXAlignment = Enum.TextXAlignment.Left
+Instance.new("UICorner", RunAutoBtn)
+local Padding = Instance.new("UIPadding", RunAutoBtn)
+Padding.PaddingLeft = UDim.new(0, 15)
+
+RunAutoBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))()
 end)
 
--- [[ LÓGICA DE NAVEGAÇÃO ]] --
-local function openTab(page, btn)
-    PagePlayer.Visible = false; PageServers.Visible = false; PageFly.Visible = false; PageHelper.Visible = false
-    btnPlayer.BackgroundColor3 = COLORS.BTN; btnServers.BackgroundColor3 = COLORS.BTN; btnFly.BackgroundColor3 = COLORS.BTN; btnHelper.BackgroundColor3 = COLORS.BTN
-    btnPlayer.TextColor3 = COLORS.TEXT; btnServers.TextColor3 = COLORS.TEXT; btnFly.TextColor3 = COLORS.TEXT; btnHelper.TextColor3 = COLORS.TEXT
-    
-    page.Visible = true
-    btn.BackgroundColor3 = COLORS.ACCENT
-    btn.TextColor3 = COLORS.BG
-end
-
-btnPlayer.MouseButton1Click:Connect(function() openTab(PagePlayer, btnPlayer) end)
-btnServers.MouseButton1Click:Connect(function() openTab(PageServers, btnServers) end)
-btnFly.MouseButton1Click:Connect(function() openTab(PageFly, btnFly) end)
-btnHelper.MouseButton1Click:Connect(function() openTab(PageHelper, btnHelper) end)
-
--- TÍTULO E FECHAR
-local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(0, 300, 0, 40)
-Title.Position = UDim2.new(0, 20, 0, 5)
-Title.Text = "CHINELAO PREMIUM"
-Title.TextColor3 = COLORS.TEXT
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
-Title.BackgroundTransparency = 1
-Title.TextXAlignment = Enum.TextXAlignment.Left
-
+-- Fechar
 local Close = Instance.new("TextButton", Main)
 Close.Size = UDim2.fromOffset(30, 30)
-Close.Position = UDim2.new(1, -40, 0, 10)
-Close.Text = "X"; Close.TextColor3 = Color3.new(1,0,0); Close.BackgroundTransparency = 1
+Close.Position = UDim2.new(1, -35, 0, 5)
+Close.Text = "X"
+Close.TextColor3 = Color3.new(1, 0, 0)
+Close.BackgroundTransparency = 1
+Close.TextSize = 20
 Close.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- Drag
+-- Arrastar
 local function drag()
     local dragging, dragInput, dragStart, startPos
     Main.InputBegan:Connect(function(input)
