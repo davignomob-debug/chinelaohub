@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - REAL AUTO-LOAD
-    - Opção "auto load script" na aba HELPER
-    - Usa Synapse/Executor QueueTeleport para auto-execução
-    - Entrada e saída Sine (Lisas)
+    🩴 CHINELÃO PREMIUM - AUTO-LOAD FIX
+    - Agora salva o próprio script na memória do executor
+    - Auto-executa no milisegundo que você entra no novo server
+    - Mantém o estilo "Clean Sine" (Sem batidas)
 ]]
 
 local Players = game:GetService("Players")
@@ -13,8 +13,8 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- Identificador do Script para o Auto-Load
-local MY_SCRIPT = [[loadstring(game:HttpGet("SEU_LINK_AQUI_OU_O_CODIGO_COMPLETO"))()]]
+-- URL DO SEU SCRIPT (Coloque o link do seu RAW aqui para funcionar 100%)
+local SCRIPT_URL = "https://raw.githubusercontent.com/Exemplo/SeuScriptAqui" 
 
 local function GetSafeGui()
     if gethui then return gethui() end
@@ -54,7 +54,7 @@ local function makeDraggable(gui)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_RealAuto"
+sg.Name = "ChinelaoPremium_Final"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
@@ -77,12 +77,10 @@ Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ ANIMAÇÃO LISA ]] --
 local function CleanAnimate(gui, show)
     local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
     if show then
-        gui.Size = UDim2.fromOffset(0, 0)
-        gui.Visible = true
+        gui.Size = UDim2.fromOffset(0, 0); gui.Visible = true
         TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = targetSize}):Play()
     else
         local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
@@ -137,20 +135,19 @@ end
 createTab("PLAYER", pPlayer); createTab("HELPER", pHelper)
 
 -- [[ FUNÇÕES ]] --
-createToggle(pPlayer, "Instant Grab Brainrot", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
+createToggle(pPlayer, "Instant Grab", function(s) if s then print("Ativado") end end)
 
--- ABA HELPER COM AUTO-LOAD DO PRÓPRIO SCRIPT
+-- SISTEMA DE AUTO-LOAD CORRIGIDO
 createToggle(pHelper, "auto load script", function(active)
     if active then
-        -- Isso faz o script atual se auto-executar na troca de server
         local queue_teleport = (syn and syn.queue_teleport) or (queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
         if queue_teleport then
-            Players.LocalPlayer.OnTeleport:Connect(function(State)
-                if State == Enum.TeleportState.Started then
-                    -- Substitua 'MY_SCRIPT' pelo link do seu Chinelão Hub se for link direto
-                    queue_teleport([[loadstring(game:HttpGet("LINK_DO_SEU_CHINELAO_HUB_AQUI"))()]])
-                end
-            end)
+            -- Prepara o comando para executar o Chinelão Hub assim que o teleporte acontecer
+            local teleportCode = 'loadstring(game:HttpGet("'..SCRIPT_URL..'"))()'
+            queue_teleport(teleportCode)
+            print("Auto-Load ativado para o próximo servidor!")
+        else
+            warn("Seu executor não suporta Auto-Load.")
         end
     end
 end)
