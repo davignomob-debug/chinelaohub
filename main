@@ -1,12 +1,12 @@
 --[[ 
-    🩴 CHINELAO PREMIUM - BLUE ICON UPDATE
-    - Interface: Chilli Original
-    - Botão Minimizar: Ícone Azul Neon "CHINELAO HUB"
+    🩴 CHINELÃO PREMIUM - FINAL INTERFACE
+    - Sem Chilli Hub / Apenas Chinelão Premium
+    - Botões de Controle com Hover (Ciano e Vermelho)
+    - Abas: PLAYER | SERVERS | FLY | HELPER
 ]]
 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
@@ -23,41 +23,37 @@ local COLORS = {
     BG = Color3.fromRGB(16, 24, 39),
     GRAD_1 = Color3.fromRGB(12, 18, 32),
     GRAD_2 = Color3.fromRGB(21, 30, 47),
-    GRAD_3 = Color3.fromRGB(10, 82, 120),
     STROKE = Color3.fromRGB(56, 189, 248),
     TEXT = Color3.fromRGB(241, 245, 249),
     ACCENT = Color3.fromRGB(34, 211, 238),
-    BTN = Color3.fromRGB(30, 41, 59),
-    CARD = Color3.fromRGB(15, 20, 35),
-    BLUE_NEON = Color3.fromRGB(0, 210, 255) -- Azul Neon atualizado
+    BTN_BG = Color3.fromRGB(30, 41, 59),
+    HOVER_MIN = Color3.fromRGB(0, 190, 255),
+    HOVER_CLOSE = Color3.fromRGB(200, 0, 0)
 }
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_BlueEdition"
+sg.Name = "ChinelaPremium_Final"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO MINIMIZADO AZUL (CONFORME SOLICITADO) ]] --
+-- [[ BOTÃO MINIMIZADO (RESTAURAR) ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
 OpenBtn.Size = UDim2.fromOffset(60, 60)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, -30)
 OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20)
-OpenBtn.Image = "rbxassetid://6073763717" -- Textura de nebulosa
+OpenBtn.Image = "rbxassetid://6073763717"
 OpenBtn.ImageColor3 = Color3.fromRGB(0, 30, 60)
 OpenBtn.Visible = false
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
 local OpenStroke = Instance.new("UIStroke", OpenBtn)
-OpenStroke.Color = COLORS.BLUE_NEON
+OpenStroke.Color = COLORS.ACCENT
 OpenStroke.Thickness = 2
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
 OpenText.Size = UDim2.new(1, 0, 1, 0)
 OpenText.BackgroundTransparency = 1
-OpenText.Text = "CHINELAO\nHUB"
-OpenText.TextColor3 = COLORS.BLUE_NEON
-OpenText.Font = Enum.Font.GothamBlack
-OpenText.TextSize = 10
-OpenText.LineHeight = 0.9
+OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT
+OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
@@ -65,51 +61,64 @@ Main.Size = UDim2.fromOffset(550, 350)
 Main.Position = UDim2.new(0.5, -275, 0.5, -175)
 Main.BackgroundColor3 = COLORS.BG
 Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 20)
-local BgGrad = Instance.new("UIGradient", Main)
-BgGrad.Rotation = 35
-BgGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0.00, COLORS.GRAD_1),
-    ColorSequenceKeypoint.new(0.55, COLORS.GRAD_2),
-    ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
-})
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- Funções de Minimizar
+-- [[ BARRA DE TÍTULO ]] --
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(0, 250, 0, 50)
+Title.Position = UDim2.new(0, 20, 0, 0)
+Title.Text = "CHINELÃO PREMIUM"
+Title.TextColor3 = COLORS.TEXT
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- [[ BOTÕES DE CONTROLE (HOVER STYLE) ]] --
+local function createControlBtn(text, pos, hoverColor)
+    local btn = Instance.new("TextButton", Main)
+    btn.Size = UDim2.fromOffset(35, 35)
+    btn.Position = pos
+    btn.BackgroundColor3 = COLORS.BTN_BG
+    btn.Text = text
+    btn.TextColor3 = COLORS.TEXT
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 20
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.BTN_BG}):Play()
+    end)
+    return btn
+end
+
+local MinBtn = createControlBtn("—", UDim2.new(1, -90, 0, 10), COLORS.HOVER_MIN)
+local CloseBtn = createControlBtn("X", UDim2.new(1, -45, 0, 10), COLORS.HOVER_CLOSE)
+
 local function ToggleUI()
     Main.Visible = not Main.Visible
     OpenBtn.Visible = not Main.Visible
 end
 
-local MinBtn = Instance.new("TextButton", Main)
-MinBtn.Size = UDim2.fromOffset(30, 30)
-MinBtn.Position = UDim2.new(1, -75, 0, 10)
-MinBtn.Text = "—"
-MinBtn.TextColor3 = COLORS.TEXT
-MinBtn.BackgroundTransparency = 1
-MinBtn.TextSize = 20
 MinBtn.MouseButton1Click:Connect(ToggleUI)
 OpenBtn.MouseButton1Click:Connect(ToggleUI)
-
-local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Size = UDim2.fromOffset(30, 30)
-CloseBtn.Position = UDim2.new(1, -40, 0, 10)
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.new(1, 0, 0)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.TextSize = 20
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- [[ SIDEBAR & NAVEGAÇÃO ]] --
+-- [[ SIDEBAR ]] --
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 140, 1, -60)
-Sidebar.Position = UDim2.new(0, 15, 0, 45)
+Sidebar.Size = UDim2.new(0, 140, 1, -70)
+Sidebar.Position = UDim2.new(0, 15, 0, 60)
 Sidebar.BackgroundTransparency = 1
 Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 10)
 
+-- [[ CONTAINER ]] --
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -185, 1, -65)
-Container.Position = UDim2.new(0, 170, 0, 50)
+Container.Size = UDim2.new(1, -185, 1, -80)
+Container.Position = UDim2.new(0, 170, 0, 65)
 Container.BackgroundTransparency = 1
 
 local function createPage()
@@ -123,35 +132,38 @@ pPlayer.Visible = true
 
 local function createTab(name, page)
     local b = Instance.new("TextButton", Sidebar)
-    b.Size = UDim2.new(1, 0, 0, 38)
-    b.BackgroundColor3 = COLORS.BTN
+    b.Size = UDim2.new(1, 0, 0, 40)
+    b.BackgroundColor3 = COLORS.BTN_BG
     b.Text = name; b.TextColor3 = COLORS.TEXT
-    b.Font = Enum.Font.GothamBold; b.TextSize = 13
+    b.Font = Enum.Font.GothamBold; b.TextSize = 14
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
-    Instance.new("UIStroke", b).Color = COLORS.STROKE
+    
     b.MouseButton1Click:Connect(function()
         pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
         page.Visible = true
+        for _, btn in pairs(Sidebar:GetChildren()) do
+            if btn:IsA("TextButton") then btn.BackgroundColor3 = COLORS.BTN_BG end
+        end
+        b.BackgroundColor3 = COLORS.ACCENT
+        b.TextColor3 = COLORS.BG
     end)
 end
 
 createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- [[ CONTEÚDOS ]] --
+-- [[ CONTEÚDO PLAYER (INSTANT GRAB) ]] --
 local bGrab = Instance.new("TextButton", pPlayer)
-bGrab.Size = UDim2.new(1, 0, 0, 55); bGrab.BackgroundColor3 = COLORS.ACCENT
-bGrab.Text = "INSTANT GRAB BRAINROT"; bGrab.Font = Enum.Font.GothamBlack
+bGrab.Size = UDim2.new(1, 0, 0, 60)
+bGrab.BackgroundColor3 = COLORS.ACCENT
+bGrab.Text = "INSTANT GRAB BRAINROT"
+bGrab.Font = Enum.Font.GothamBlack
+bGrab.TextColor3 = COLORS.BG
 Instance.new("UICorner", bGrab)
-bGrab.MouseButton1Click:Connect(function() loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end)
+bGrab.MouseButton1Click:Connect(function() 
+    loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() 
+end)
 
-local bRun = Instance.new("TextButton", pHelper)
-bRun.Size = UDim2.new(1, 0, 0, 50); bRun.Position = UDim2.new(0, 0, 0, 70)
-bRun.BackgroundColor3 = COLORS.CARD; bRun.Text = "Run Auto-Loader"
-bRun.TextColor3 = COLORS.ACCENT; bRun.Font = Enum.Font.GothamBold
-Instance.new("UICorner", bRun)
-bRun.MouseButton1Click:Connect(function() loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() end)
-
--- [[ ARRASTAR ]] --
+-- [[ DRAGGABLE ]] --
 local function drag(f)
     local d, i, s, sp
     f.InputBegan:Connect(function(input)
