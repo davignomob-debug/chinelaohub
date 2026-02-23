@@ -21,7 +21,8 @@ local COLORS = {
     ACCENT = Color3.fromRGB(34, 211, 238),
     CARD_BG = Color3.fromRGB(17, 22, 28),
     TOGGLE_ON = Color3.fromRGB(34, 211, 238),
-    TOGGLE_OFF = Color3.fromRGB(45, 55, 72)
+    TOGGLE_OFF = Color3.fromRGB(45, 55, 72),
+    HOVER_RED = Color3.fromRGB(255, 60, 60)
 }
 
 if parentGui:FindFirstChild("ChinelaoPremium_Final_V11") then
@@ -33,15 +34,15 @@ sg.Name = "ChinelaoPremium_Final_V11"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO ABRIR ]] --
+-- [[ BOTÃO ABRIR (MINIMIZADO) ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
-OpenBtn.Size = UDim2.fromOffset(55, 55)
+OpenBtn.Size = UDim2.fromOffset(65, 65)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, 0)
 OpenBtn.BackgroundColor3 = COLORS.BG
 OpenBtn.Visible = false
 OpenBtn.ZIndex = 100
-OpenBtn.Image = "rbxassetid://131109000100412"
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 10)
+OpenBtn.Image = "rbxassetid://131109000100412" -- Foto do Chinelão Hub
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
 local OpenStroke = Instance.new("UIStroke", OpenBtn)
 OpenStroke.Color = COLORS.ACCENT; OpenStroke.Thickness = 2
 
@@ -61,22 +62,28 @@ local TopBar = Instance.new("Frame", Main)
 TopBar.Size = UDim2.new(1, 0, 0, 50); TopBar.BackgroundTransparency = 1; TopBar.ZIndex = 11
 
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 20, 0, 0); Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 25, 0, 0); Title.BackgroundTransparency = 1
 Title.Text = "CHINELÃO PREMIUM"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.TextXAlignment = 0; Title.ZIndex = 12
 
--- BOTÕES CONTROLE
+-- CONTROLES (X e -)
 local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 100, 1, 0); Controls.Position = UDim2.new(1, -110, 0, 0); Controls.BackgroundTransparency = 1
 
-local function createControlBtn(txt, pos, callback)
+local function createControlBtn(txt, pos, hoverColor, callback)
     local b = Instance.new("TextButton", Controls)
-    b.Size = UDim2.fromOffset(32, 32); b.Position = UDim2.new(0, pos, 0.5, -16); b.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-    b.Text = txt; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.ZIndex = 15; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    b.Size = UDim2.fromOffset(35, 35); b.Position = UDim2.new(0, pos, 0.5, -17)
+    b.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+    b.Text = txt; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 16; b.ZIndex = 15
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    
+    b.MouseEnter:Connect(function() b.BackgroundColor3 = hoverColor end)
+    b.MouseLeave:Connect(function() b.BackgroundColor3 = Color3.fromRGB(30, 35, 45) end)
     b.MouseButton1Click:Connect(callback)
 end
 
-createControlBtn("-", 0, function() Main.Visible = false; OpenBtn.Visible = true end)
-createControlBtn("X", 45, function() sg:Destroy() end)
+createControlBtn("-", 0, COLORS.ACCENT, function() Main.Visible = false; OpenBtn.Visible = true end)
+createControlBtn("X", 45, COLORS.HOVER_RED, function() sg:Destroy() end)
+
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 
 -- SIDEBAR
@@ -111,8 +118,7 @@ local function createPage(name)
 end
 
 local pPlayer = createPage("PLAYER"); pPlayer.Visible = true
-local pFly = createPage("FLY")
-local pServer = createPage("SERVERS")
+local pFly = createPage("FLY"); local pServer = createPage("SERVERS")
 
 local function createTab(name)
     local b = Instance.new("TextButton", Sidebar)
@@ -120,7 +126,6 @@ local function createTab(name)
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function() for _, v in pairs(pages) do v.Visible = false end; pages[name].Visible = true end)
 end
-
 createTab("PLAYER"); createTab("FLY"); createTab("SERVERS")
 
 -- TOGGLE
@@ -138,7 +143,7 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ LÓGICA AUTO PURCHASE (SISTEMA FUNCIONAL) ]] --
+-- LÓGICA AUTO PURCHASE
 _G.AutoPurchase = false
 task.spawn(function()
     while true do
@@ -150,9 +155,7 @@ task.spawn(function()
                         v.HoldDuration = 0
                         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                             local distance = (LocalPlayer.Character.HumanoidRootPart.Position - v.Parent.Position).Magnitude
-                            if distance < v.MaxActivationDistance then
-                                fireproximityprompt(v)
-                            end
+                            if distance < v.MaxActivationDistance then fireproximityprompt(v) end
                         end
                     end
                 end
@@ -162,19 +165,16 @@ task.spawn(function()
 end)
 
 createToggle(pPlayer, "Auto Purchase Items", function(s) _G.AutoPurchase = s end)
-createToggle(pFly, "Enable Fly GUI V3", function(s)
-    if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end
-end)
-createToggle(pServer, "Rejoin Server", function(s)
-    if s then TeleportService:Teleport(game.PlaceId, LocalPlayer) end
-end)
+createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
+createToggle(pServer, "Rejoin Server", function(s) if s then TeleportService:Teleport(game.PlaceId, LocalPlayer) end end)
 
 -- DRAG
-local function makeDraggable(gui)
+local function makeDraggable(gui, target)
+    local target = target or gui
     local dragging, dragInput, dragStart, startPos
-    gui.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = gui.Position end end)
+    gui.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = target.Position end end)
     gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
-    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; target.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
     UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 end
 makeDraggable(Main); makeDraggable(OpenBtn)
