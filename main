@@ -25,12 +25,12 @@ local COLORS = {
     HOVER_RED = Color3.fromRGB(255, 60, 60)
 }
 
-if parentGui:FindFirstChild("ChinelaoPremium_CyberLogic_V12") then
-    parentGui:FindFirstChild("ChinelaoPremium_CyberLogic_V12"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_Final_V14") then
+    parentGui:FindFirstChild("ChinelaoPremium_Final_V14"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_CyberLogic_V12"
+sg.Name = "ChinelaoPremium_Final_V14"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -124,7 +124,7 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ LÓGICA AUTO PURCHASE (ORIGINAL) ]] --
+-- [[ LÓGICA AUTO PURCHASE (SABOROSO) ]] --
 _G.AutoPurchase = false
 task.spawn(function()
     while true do task.wait(0.1)
@@ -146,18 +146,25 @@ end)
 
 createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
 
--- [[ ABA SERVERS - PREMIUM SERVER (FUNÇÃO DO CYBERHUB) ]] --
-local PremiumBtn = Instance.new("TextButton", pServer)
-PremiumBtn.Size = UDim2.new(1, -10, 0, 55)
-PremiumBtn.BackgroundColor3 = COLORS.CARD_BG
-PremiumBtn.Text = "Premium Server"
-PremiumBtn.TextColor3 = COLORS.ACCENT
-PremiumBtn.Font = Enum.Font.GothamBold
-PremiumBtn.TextSize = 15
-Instance.new("UICorner", PremiumBtn).CornerRadius = UDim.new(0, 8)
+-- [[ ABA FLY - FLY GUI V3 ]] --
+createToggle(pFly, "Enable Fly GUI V3", function(s)
+    if s then 
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.lua"))() 
+    end
+end)
 
-PremiumBtn.MouseButton1Click:Connect(function()
-    -- Lógica idêntica ao bGen do CyberHub
+-- [[ ABA SERVERS - PREMIUM SERVER (FUNÇÃO CYBERHUB) ]] --
+local bPremium = Instance.new("TextButton", pServer)
+bPremium.Size = UDim2.new(1, -10, 0, 55)
+bPremium.BackgroundColor3 = COLORS.CARD_BG
+bPremium.Text = "Premium Server"
+bPremium.TextColor3 = COLORS.ACCENT
+bPremium.Font = Enum.Font.GothamBold
+bPremium.TextSize = 15
+Instance.new("UICorner", bPremium).CornerRadius = UDim.new(0, 8)
+
+bPremium.MouseButton1Click:Connect(function()
+    -- Lógica Premium do CyberHub (Pega o server mais vazio/estável da lista)
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
@@ -166,7 +173,7 @@ PremiumBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- CONTROLES TOP BAR
+-- CONTROLES
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.fromOffset(35, 35); CloseBtn.Position = UDim2.new(1, -45, 0.5, -17); CloseBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45); CloseBtn.Text = "X"; CloseBtn.TextColor3 = COLORS.TEXT; CloseBtn.Font = Enum.Font.GothamBold; Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
@@ -176,8 +183,9 @@ MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0.5,
 MinBtn.MouseButton1Click:Connect(function() Main.Visible = false; OpenBtn.Visible = true end)
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 
--- ARRASTAR
+-- DRAG
 local function makeDraggable(gui, target)
+    local target = target or gui
     local dragging, dragInput, dragStart, startPos
     gui.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = target.Position end end)
     gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
