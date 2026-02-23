@@ -28,7 +28,7 @@ local COLORS = {
 }
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final_Fixed"
+sg.Name = "ChinelaoPremium_SEM_LIMPEZA"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -60,7 +60,7 @@ Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ TÍTULO SUPERIOR ESQUERDO ]] --
+-- [[ NOME NO PAINEL (SUPERIOR ESQUERDA) ]] --
 local PanelTitle = Instance.new("TextLabel", Main)
 PanelTitle.Size = UDim2.new(0, 250, 0, 50)
 PanelTitle.Position = UDim2.new(0, 20, 0, 0)
@@ -118,7 +118,7 @@ end
 local pPlayer = createPage(); local pServers = createPage(); local pFly = createPage(); local pHelper = createPage()
 pPlayer.Visible = true
 
--- [[ FUNÇÃO TOGGLE (CORRIGIDA) ]] --
+-- [[ TOGGLE PREMIUM COM BOLINHA ]] --
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent)
     card.Size = UDim2.new(1, -10, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
@@ -138,10 +138,8 @@ local function createToggle(parent, text, callback)
     local active = false
     tglBG.MouseButton1Click:Connect(function()
         active = not active
-        local targetPos = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        local targetColor = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
-        TweenService:Create(circle, TweenInfo.new(0.2), {Position = targetPos}):Play()
-        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+        TweenService:Create(circle, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
+        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF}):Play()
         callback(active)
     end)
 end
@@ -158,19 +156,33 @@ end
 
 createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- [[ FUNÇÕES ]] --
-createToggle(pPlayer, "Instant Grab", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
+-- [[ FUNÇÕES RESTAURADAS ]] --
+createToggle(pPlayer, "Instant Grab Brainrot", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
+
+-- Aba Server Premium (Como estava antes)
 createToggle(pServers, "Server Hop", function(s)
     if s then
         local res = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?limit=100"))
-        for _, srv in ipairs(res.data) do if srv.playing < srv.maxPlayers and srv.id ~= game.JobId then TeleportService:TeleportToPlaceInstance(game.PlaceId, srv.id) break end end
+        for _, srv in ipairs(res.data) do 
+            if srv.playing < srv.maxPlayers and srv.id ~= game.JobId then 
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, srv.id) 
+                break 
+            end 
+        end
     end
 end)
-createToggle(pFly, "Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.lua"))() end end)
+
+-- Aba Fly Premium (Como estava antes)
+createToggle(pFly, "Fly GUI V3", function(s) 
+    if s then 
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() 
+    end 
+end)
+
 createToggle(pHelper, "auto load script", function(active)
     if active then
         local queue = syn and syn.queue_teleport or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
-        if queue then queue('loadstring(game:HttpGet("LINK_DO_SCRIPT"))()') end
+        if queue then queue('loadstring(game:HttpGet("LINK_AQUI"))()') end
     end
 end)
 
