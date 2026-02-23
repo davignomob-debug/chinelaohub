@@ -28,7 +28,7 @@ local COLORS = {
 }
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_FinalVersion"
+sg.Name = "ChinelaoPremium_Final_Fixed"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -60,7 +60,7 @@ Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ NOME NO PAINEL (SUPERIOR ESQUERDA) ]] --
+-- [[ TÍTULO SUPERIOR ESQUERDO ]] --
 local PanelTitle = Instance.new("TextLabel", Main)
 PanelTitle.Size = UDim2.new(0, 250, 0, 50)
 PanelTitle.Position = UDim2.new(0, 20, 0, 0)
@@ -74,35 +74,23 @@ PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
 local function CleanAnimate(gui, show)
     local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
     if show then
-        gui.Size = UDim2.fromOffset(0, 0)
-        gui.Visible = true
+        gui.Size = UDim2.fromOffset(0, 0); gui.Visible = true
         TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {Size = targetSize}):Play()
     else
         local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {Size = UDim2.fromOffset(0, 0)})
-        tween:Play()
-        tween.Completed:Connect(function() gui.Visible = false end)
+        tween:Play(); tween.Completed:Connect(function() gui.Visible = false end)
     end
 end
 
 -- [[ BOTÕES DE CONTROLE ]] --
 local MinBtn = Instance.new("TextButton", Main)
-MinBtn.Size = UDim2.fromOffset(35, 35)
-MinBtn.Position = UDim2.new(1, -90, 0, 10)
-MinBtn.BackgroundColor3 = COLORS.BTN_BG
-MinBtn.Text = "—"
-MinBtn.TextColor3 = COLORS.TEXT
-MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextSize = 18
+MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0, 10)
+MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 18
 Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
 
 local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Size = UDim2.fromOffset(35, 35)
-CloseBtn.Position = UDim2.new(1, -45, 0, 10)
-CloseBtn.BackgroundColor3 = COLORS.BTN_BG
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = COLORS.TEXT
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 18
+CloseBtn.Size = UDim2.fromOffset(35, 35); CloseBtn.Position = UDim2.new(1, -45, 0, 10)
+CloseBtn.BackgroundColor3 = COLORS.BTN_BG; CloseBtn.Text = "X"; CloseBtn.TextColor3 = COLORS.TEXT; CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextSize = 18
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
 MinBtn.MouseEnter:Connect(function() TweenService:Create(MinBtn, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.HOVER_MIN}):Play() end)
@@ -114,70 +102,61 @@ MinBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait
 CloseBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait(0.3); sg:Destroy() end)
 OpenBtn.MouseButton1Click:Connect(function() CleanAnimate(OpenBtn, false); task.wait(0.2); CleanAnimate(Main, true) end)
 
--- [[ SIDEBAR ]] --
+-- [[ SIDEBAR E PAGINAS ]] --
 local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 140, 1, -70)
-Sidebar.Position = UDim2.new(0, 15, 0, 60)
-Sidebar.BackgroundTransparency = 1
+Sidebar.Size = UDim2.new(0, 140, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 60); Sidebar.BackgroundTransparency = 1
 Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
 
 local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -185, 1, -80)
-Container.Position = UDim2.new(0, 170, 0, 65)
-Container.BackgroundTransparency = 1
+Container.Size = UDim2.new(1, -185, 1, -80); Container.Position = UDim2.new(0, 170, 0, 65); Container.BackgroundTransparency = 1
 
 local function createPage()
-    local p = Instance.new("ScrollingFrame", Container)
-    p.Size = UDim2.new(1, 0, 1, 0)
-    p.BackgroundTransparency = 1
-    p.Visible = false
-    p.ScrollBarThickness = 0
-    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8)
-    return p
+    local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 0
+    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8); return p
 end
 
 local pPlayer = createPage(); local pServers = createPage(); local pFly = createPage(); local pHelper = createPage()
 pPlayer.Visible = true
 
+-- [[ FUNÇÃO TOGGLE (CORRIGIDA) ]] --
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent)
-    card.Size = UDim2.new(1, -10, 0, 50)
-    card.BackgroundColor3 = COLORS.CARD_BG
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    card.Size = UDim2.new(1, -10, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    
     local label = Instance.new("TextLabel", card)
     label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0)
     label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = 0
+    
     local tglBG = Instance.new("TextButton", card)
     tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10)
-    tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""
-    Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
+    tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
+    
+    local circle = Instance.new("Frame", tglBG)
+    circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8)
+    circle.BackgroundColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
+    
     local active = false
     tglBG.MouseButton1Click:Connect(function()
         active = not active
-        tglBG.BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
+        local targetPos = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+        local targetColor = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
+        TweenService:Create(circle, TweenInfo.new(0.2), {Position = targetPos}):Play()
+        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
         callback(active)
     end)
 end
 
 local function createTab(name, page)
     local b = Instance.new("TextButton", Sidebar)
-    b.Size = UDim2.new(1, 0, 0, 35)
-    b.BackgroundColor3 = COLORS.BTN_BG
-    b.Text = name
-    b.TextColor3 = COLORS.TEXT
-    b.Font = Enum.Font.GothamBold
-    b.TextSize = 14 -- TAMANHO DAS LETRAS DAS GUIAS AUMENTADO
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.TextColor3 = COLORS.TEXT
+    b.Font = Enum.Font.GothamBold; b.TextSize = 14; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function()
         pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
         page.Visible = true
     end)
 end
 
-createTab("PLAYER", pPlayer)
-createTab("SERVERS", pServers)
-createTab("FLY", pFly)
-createTab("HELPER", pHelper)
+createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
 -- [[ FUNÇÕES ]] --
 createToggle(pPlayer, "Instant Grab", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
@@ -191,9 +170,7 @@ createToggle(pFly, "Fly GUI V3", function(s) if s then loadstring(game:HttpGet("
 createToggle(pHelper, "auto load script", function(active)
     if active then
         local queue = syn and syn.queue_teleport or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
-        if queue then
-            queue('loadstring(game:HttpGet("LINK_DO_SCRIPT"))()')
-        end
+        if queue then queue('loadstring(game:HttpGet("LINK_DO_SCRIPT"))()') end
     end
 end)
 
