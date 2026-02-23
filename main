@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - CLEAN SMOOTH UPDATE
-    - Entrada e saída ultra lisas (Sem batidas)
+    🩴 CHINELÃO PREMIUM - AUTO-LOAD UPDATE
+    - Opção "auto load script" na aba HELPER
+    - Entrada e saída ultra lisas (Sine)
     - Expansão centralizada (AnchorPoint 0.5)
-    - Rastro de borda neon 0.8 preservado
 ]]
 
 local Players = game:GetService("Players")
@@ -34,21 +34,9 @@ local COLORS = {
     HOVER_CLOSE = Color3.fromRGB(200, 0, 0)
 }
 
--- [[ SISTEMA DE ARRASTAR COM RASTRO DE BORDA ]] --
-local function makeDraggable(gui, hasTrail)
+-- [[ SISTEMA DE ARRASTAR ]] --
+local function makeDraggable(gui)
     local dragging, dragInput, dragStart, startPos
-    local function createEdgeTrail()
-        if not hasTrail then return end
-        local trail = Instance.new("Frame", gui.Parent)
-        trail.AnchorPoint = Vector2.new(0.5, 0.5)
-        trail.Size = gui.Size; trail.Position = gui.Position; trail.BackgroundTransparency = 1; trail.BorderSizePixel = 0
-        Instance.new("UICorner", trail).CornerRadius = gui:FindFirstChildOfClass("UICorner").CornerRadius
-        local stroke = Instance.new("UIStroke", trail)
-        stroke.Color = COLORS.ACCENT; stroke.Thickness = 2; stroke.Transparency = 0.8
-        TweenService:Create(trail, TweenInfo.new(0.4), {Size = gui.Size + UDim2.fromOffset(20, 20)}):Play()
-        TweenService:Create(stroke, TweenInfo.new(0.4), {Transparency = 1, Thickness = 0}):Play()
-        task.delay(0.4, function() trail:Destroy() end)
-    end
     gui.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true; dragStart = input.Position; startPos = gui.Position
@@ -58,7 +46,6 @@ local function makeDraggable(gui, hasTrail)
     gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
-            if hasTrail then createEdgeTrail() end
             local delta = input.Position - dragStart
             gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
@@ -66,7 +53,7 @@ local function makeDraggable(gui, hasTrail)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Clean"
+sg.Name = "ChinelaoPremium_AutoLoad"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
@@ -89,13 +76,12 @@ Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ ANIMAÇÃO LISA (SINE) ]] --
+-- [[ ANIMAÇÃO LISA ]] --
 local function CleanAnimate(gui, show)
     local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
     if show then
         gui.Size = UDim2.fromOffset(0, 0)
         gui.Visible = true
-        -- Sine Out é a curva mais suave, sem ultrapassar o tamanho ou bater
         TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = targetSize}):Play()
     else
         local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
@@ -170,6 +156,13 @@ createToggle(pServers, "Server Premium (Hop)", function(s)
     end
 end)
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
-createToggle(pHelper, "Run Auto-Loader", function(s) if s then loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() end end)
 
-makeDraggable(Main, false); makeDraggable(OpenBtn, true)
+-- ABA HELPER ATUALIZADA
+createToggle(pHelper, "auto load script", function(s) 
+    if s then 
+        -- Carregamento do Chilli Hub / Auto Load
+        loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() 
+    end 
+end)
+
+makeDraggable(Main); makeDraggable(OpenBtn)
