@@ -25,12 +25,12 @@ local COLORS = {
     HOVER_RED = Color3.fromRGB(255, 60, 60)
 }
 
-if parentGui:FindFirstChild("ChinelaoPremium_Final_V15") then
-    parentGui:FindFirstChild("ChinelaoPremium_Final_V15"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_FlyUpdate_V16") then
+    parentGui:FindFirstChild("ChinelaoPremium_FlyUpdate_V16"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final_V15"
+sg.Name = "ChinelaoPremium_FlyUpdate_V16"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -82,6 +82,15 @@ local function createTab(name)
 end
 createTab("PLAYER"); createTab("FLY"); createTab("SERVERS")
 
+-- COMPONENTE BOTÃO SIMPLES
+local function createSimpleBtn(parent, text, callback)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(1, -10, 0, 55); b.BackgroundColor3 = COLORS.CARD_BG; b.Text = text; b.TextColor3 = COLORS.ACCENT; b.Font = Enum.Font.GothamBold; b.TextSize = 15; b.ZIndex = 16
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    b.MouseButton1Click:Connect(callback)
+    return b
+end
+
 -- COMPONENTE TOGGLE
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 55); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16
@@ -119,20 +128,13 @@ task.spawn(function()
 end)
 createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
 
--- [[ ABA FLY - COMANDO ORIGINAL REESTABELECIDO ]] --
-createToggle(pFly, "Enable Fly GUI V3", function(s)
-    if s then 
-        -- Comando exato que você mandou do código antigo:
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() 
-    end
+-- [[ ABA FLY - NOVO BOTÃO DE INJEÇÃO ]] --
+createSimpleBtn(pFly, "Inject Fly GUI V3", function()
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))()
 end)
 
--- [[ ABA SERVERS - PREMIUM SERVER (FUNÇÃO CYBERHUB) ]] --
-local bPremium = Instance.new("TextButton", pServer)
-bPremium.Size = UDim2.new(1, -10, 0, 55); bPremium.BackgroundColor3 = COLORS.CARD_BG; bPremium.Text = "Premium Server"; bPremium.TextColor3 = COLORS.ACCENT; bPremium.Font = Enum.Font.GothamBold; bPremium.TextSize = 15; bPremium.ZIndex = 16
-Instance.new("UICorner", bPremium).CornerRadius = UDim.new(0, 8)
-
-bPremium.MouseButton1Click:Connect(function()
+-- [[ ABA SERVERS - PREMIUM SERVER (CYBER LOGIC) ]] --
+createSimpleBtn(pServer, "Premium Server", function()
     local success, result = pcall(function()
         return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
     end)
@@ -142,14 +144,14 @@ bPremium.MouseButton1Click:Connect(function()
 end)
 
 -- CONTROLES
-local function createControlBtn(txt, pos, hoverColor, callback)
+local function createTopControl(txt, pos, hoverColor, callback)
     local b = Instance.new("TextButton", TopBar)
     b.Size = UDim2.fromOffset(35, 35); b.Position = UDim2.new(1, pos, 0.5, -17); b.BackgroundColor3 = Color3.fromRGB(30, 35, 45); b.Text = txt; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 16; b.ZIndex = 15
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(callback)
 end
-createControlBtn("-", -90, COLORS.ACCENT, function() Main.Visible = false; OpenBtn.Visible = true end)
-createControlBtn("X", -45, COLORS.HOVER_RED, function() sg:Destroy() end)
+createTopControl("-", -90, COLORS.ACCENT, function() Main.Visible = false; OpenBtn.Visible = true end)
+createTopControl("X", -45, COLORS.HOVER_RED, function() sg:Destroy() end)
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 
 -- DRAG
