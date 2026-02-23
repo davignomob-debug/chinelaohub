@@ -29,7 +29,7 @@ local COLORS = {
 }
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_TechPerfect_Edition"
+sg.Name = "ChinelaoPremium_Final_NoAds"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -108,33 +108,28 @@ local function createTab(name, page)
 end
 createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- [[ LÓGICA TECH PERFECT (INSTANT + NO COOLDOWN) ]] --
-_G.TechPerfectGrab = false
+-- [[ LÓGICA INSTANT GRAB (APENAS FUNCIONAL, SEM INTERFACE EXTERNA) ]] --
+_G.InstantGrabActive = false
 task.spawn(function()
-    while task.wait() do -- Loop ultra rápido
-        if _G.TechPerfectGrab then
-            for _, prompt in pairs(game:GetDescendants()) do
-                if prompt:IsA("ProximityPrompt") then
-                    prompt.HoldDuration = 0
-                    prompt.ClickableDuringHold = true
-                    -- Remove o cooldown forçando o prompt a estar sempre disponível
-                    if prompt.Enabled == false then prompt.Enabled = true end 
+    while task.wait(0.1) do
+        if _G.InstantGrabActive then
+            for _, p in pairs(game:GetDescendants()) do
+                if p:IsA("ProximityPrompt") then
+                    p.HoldDuration = 0
                 end
             end
         end
     end
 end)
 
--- Conexão direta para ignorar animações do servidor
-ProximityPromptService.PromptButtonHoldBegan:Connect(function(p)
-    if _G.TechPerfectGrab then
-        fireproximityprompt(p)
+ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
+    if _G.InstantGrabActive then
+        fireproximityprompt(prompt)
     end
 end)
 
-createToggle(pPlayer, "Instant Grab (Tech Perfect)", function(s)
-    _G.TechPerfectGrab = s
-    if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end
+createToggle(pPlayer, "Instant Grab", function(s)
+    _G.InstantGrabActive = s
 end)
 
 createToggle(pServers, "Premium Server", function(s)
