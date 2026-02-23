@@ -28,72 +28,48 @@ local COLORS = {
     HOVER_RED = Color3.fromRGB(255, 0, 0)
 }
 
--- Limpa versões antigas para não bugar
-if parentGui:FindFirstChild("ChinelaoPremium_V6") then
-    parentGui:FindFirstChild("ChinelaoPremium_V6"):Destroy()
+if parentGui:FindFirstChild("ChinelaoPremium_Purchase") then
+    parentGui:FindFirstChild("ChinelaoPremium_Purchase"):Destroy()
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_V6"
+sg.Name = "ChinelaoPremium_Purchase"
 sg.ResetOnSpawn = false
 sg.DisplayOrder = 999
 sg.Parent = parentGui
 
--- [[ BOTÃO MINIMIZADO (ABRIR) ]] --
+-- [[ BOTÃO MINIMIZADO ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
-OpenBtn.Size = UDim2.fromOffset(65, 65)
-OpenBtn.Position = UDim2.new(0, 50, 0.5, 0)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20)
-OpenBtn.Visible = false
-OpenBtn.ZIndex = 10 -- Garante que fique na frente de tudo
+OpenBtn.Size = UDim2.fromOffset(65, 65); OpenBtn.Position = UDim2.new(0, 50, 0.5, 0)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Visible = false; OpenBtn.ZIndex = 10
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 15)
 local OpenStroke = Instance.new("UIStroke", OpenBtn)
 OpenStroke.Color = COLORS.ACCENT; OpenStroke.Thickness = 3
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
-OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1
-OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT
-OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10; OpenText.ZIndex = 11
+OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10; OpenText.ZIndex = 11
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
-Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Size = UDim2.fromOffset(550, 350)
-Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-Main.BackgroundColor3 = COLORS.BG
-Main.ZIndex = 5
+Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.Size = UDim2.fromOffset(550, 350); Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.BackgroundColor3 = COLORS.BG; Main.ZIndex = 5
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Color = COLORS.STROKE; MainStroke.Thickness = 2
 
--- TÍTULO
 local PanelTitle = Instance.new("TextLabel", Main)
-PanelTitle.Size = UDim2.new(0, 250, 0, 50); PanelTitle.Position = UDim2.new(0, 20, 0, 0)
-PanelTitle.BackgroundTransparency = 1; PanelTitle.Text = "CHINELÃO PREMIUM"
-PanelTitle.TextColor3 = COLORS.TEXT; PanelTitle.Font = Enum.Font.GothamBold; PanelTitle.TextSize = 18; PanelTitle.TextXAlignment = 0; PanelTitle.ZIndex = 6
+PanelTitle.Size = UDim2.new(0, 250, 0, 50); PanelTitle.Position = UDim2.new(0, 20, 0, 0); PanelTitle.BackgroundTransparency = 1; PanelTitle.Text = "CHINELÃO PREMIUM"; PanelTitle.TextColor3 = COLORS.TEXT; PanelTitle.Font = Enum.Font.GothamBold; PanelTitle.TextSize = 18; PanelTitle.TextXAlignment = 0; PanelTitle.ZIndex = 6
 
--- [[ BOTÕES DE CONTROLE ]] --
+-- [[ CONTROLES ]] --
 local MinBtn = Instance.new("TextButton", Main)
-MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0, 10)
-MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 18; MinBtn.ZIndex = 7
+MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0, 10); MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 18; MinBtn.ZIndex = 7
 Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
 
 local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Size = UDim2.fromOffset(35, 35); CloseBtn.Position = UDim2.new(1, -45, 0, 10)
-CloseBtn.BackgroundColor3 = COLORS.BTN_BG; CloseBtn.Text = "X"; CloseBtn.TextColor3 = COLORS.TEXT; CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextSize = 18; CloseBtn.ZIndex = 7
+CloseBtn.Size = UDim2.fromOffset(35, 35); CloseBtn.Position = UDim2.new(1, -45, 0, 10); CloseBtn.BackgroundColor3 = COLORS.BTN_BG; CloseBtn.Text = "X"; CloseBtn.TextColor3 = COLORS.TEXT; CloseBtn.Font = Enum.Font.GothamBold; CloseBtn.TextSize = 18; CloseBtn.ZIndex = 7
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 
--- Lógica de Minimizar REAL
-MinBtn.MouseButton1Click:Connect(function()
-    Main.Visible = false
-    OpenBtn.Visible = true
-end)
-
-OpenBtn.MouseButton1Click:Connect(function()
-    OpenBtn.Visible = false
-    Main.Visible = true
-end)
-
+MinBtn.MouseButton1Click:Connect(function() Main.Visible = false; OpenBtn.Visible = true end)
+OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
 -- Hover
@@ -105,74 +81,66 @@ CloseBtn.MouseLeave:Connect(function() CloseBtn.BackgroundColor3 = COLORS.BTN_BG
 -- [[ SIDEBAR ]] --
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 140, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 60); Sidebar.BackgroundTransparency = 1; Sidebar.ZIndex = 6
-local SideLayout = Instance.new("UIListLayout", Sidebar); SideLayout.Padding = UDim.new(0, 8)
+Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
 
--- [[ CONTAINER ]] --
 local Container = Instance.new("Frame", Main)
 Container.Size = UDim2.new(1, -185, 1, -80); Container.Position = UDim2.new(0, 170, 0, 65); Container.BackgroundTransparency = 1; Container.ZIndex = 6
 
 local pages = {}
 local function createPage(name)
-    local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0)
-    p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 2; p.ZIndex = 7
-    p.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8)
-    pages[name] = p
-    return p
+    local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 2; p.ZIndex = 7; p.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8); pages[name] = p; return p
 end
 
 local pPlayer = createPage("PLAYER"); local pServers = createPage("SERVERS"); local pFly = createPage("FLY"); local pHelper = createPage("HELPER")
 pPlayer.Visible = true
 
 local function createTab(name)
-    local b = Instance.new("TextButton", Sidebar)
-    b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.ZIndex = 7
-    b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 14
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    b.MouseButton1Click:Connect(function()
-        for _, v in pairs(pages) do v.Visible = false end
-        pages[name].Visible = true
-    end)
+    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.ZIndex = 7; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 14; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    b.MouseButton1Click:Connect(function() for _, v in pairs(pages) do v.Visible = false end; pages[name].Visible = true end)
 end
 createTab("PLAYER"); createTab("SERVERS"); createTab("FLY"); createTab("HELPER")
 
 local function createToggle(parent, text, callback)
-    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 50); card.ZIndex = 8
-    card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0); label.ZIndex = 9
-    label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = 0
-    local tglBG = Instance.new("TextButton", card); tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10); tglBG.ZIndex = 9
-    tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
-    local circle = Instance.new("Frame", tglBG); circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8); circle.ZIndex = 10
-    circle.BackgroundColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
+    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 50); card.ZIndex = 8; card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0); label.ZIndex = 9; label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = 0
+    local tglBG = Instance.new("TextButton", card); tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10); tglBG.ZIndex = 9; tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
+    local circle = Instance.new("Frame", tglBG); circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8); circle.ZIndex = 10; circle.BackgroundColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
     local active = false
-    tglBG.MouseButton1Click:Connect(function()
-        active = not active
-        circle.Position = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
-        tglBG.BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
-        callback(active)
-    end)
+    tglBG.MouseButton1Click:Connect(function() active = not active; circle.Position = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8); tglBG.BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF; callback(active) end)
 end
 
--- [[ LÓGICA ]] --
-_G.InstantGrabAtivo = false
+-- [[ LÓGICA AUTO PURCHASE (TRANSFORMADA) ]] --
+_G.AutoPurchaseAtivo = false
+
 task.spawn(function()
-    while task.wait(0.3) do
-        if _G.InstantGrabAtivo then
+    while task.wait(0.1) do
+        if _G.AutoPurchaseAtivo then
             for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("ProximityPrompt") then v.HoldDuration = 0 end
+                if v:IsA("ProximityPrompt") then
+                    v.HoldDuration = 0 -- Compra instantânea
+                    -- Se estiver perto o suficiente, ele "aperta" o botão de compra sozinho
+                    if (v.Parent:IsA("BasePart") and (LocalPlayer.Character.PrimaryPart.Position - v.Parent.Position).Magnitude < v.MaxActivationDistance) then
+                        fireproximityprompt(v)
+                    end
+                end
             end
         end
     end
 end)
 
-createToggle(pPlayer, "Instant Grab", function(s) _G.InstantGrabAtivo = s end)
+-- Substituí o Grab pelo Auto Purchase aqui
+createToggle(pPlayer, "Auto Purchase", function(s)
+    _G.AutoPurchaseAtivo = s
+end)
+
 createToggle(pServers, "Premium Server", function(s)
     if s then
         local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")) end)
         if success and result.data then TeleportService:TeleportToPlaceInstance(game.PlaceId, result.data[1].id) end
     end
 end)
+
 createToggle(pFly, "Fly GUI V3", function(s)
     if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end
 end)
