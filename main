@@ -33,21 +33,22 @@ sg.Name = "ChinelaoPremium_Final_V11"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO ABRIR ]] --
+-- [[ BOTÃO ABRIR COM A IMAGEM CUSTOM ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
-OpenBtn.Size = UDim2.fromOffset(55, 55)
+OpenBtn.Size = UDim2.fromOffset(65, 65)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, 0)
 OpenBtn.BackgroundColor3 = COLORS.BG
 OpenBtn.Visible = false
 OpenBtn.ZIndex = 100
+OpenBtn.Image = "rbxassetid://131109000100412" -- A IMAGEM QUE VOCÊ QUERIA
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 10)
 local OpenStroke = Instance.new("UIStroke", OpenBtn)
 OpenStroke.Color = COLORS.ACCENT; OpenStroke.Thickness = 2
 
--- [[ FRAME PRINCIPAL (TAMANHO TECH PERFECT) ]] --
+-- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
 Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Size = UDim2.fromOffset(720, 480) -- TAMANHO IGUAL AO TECH PERFECT
+Main.Size = UDim2.fromOffset(720, 480) 
 Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 Main.BackgroundColor3 = COLORS.BG
 Main.ZIndex = 10
@@ -63,7 +64,7 @@ local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 20, 0, 0); Title.BackgroundTransparency = 1
 Title.Text = "CHINELÃO PREMIUM"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.TextXAlignment = 0; Title.ZIndex = 12
 
--- BOTÕES MIN/FECHAR (DIREITA)
+-- BOTÕES MIN/FECHAR
 local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 100, 1, 0); Controls.Position = UDim2.new(1, -110, 0, 0); Controls.BackgroundTransparency = 1
 
@@ -78,12 +79,12 @@ createControlBtn("-", 0, function() Main.Visible = false; OpenBtn.Visible = true
 createControlBtn("X", 45, function() sg:Destroy() end)
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
 
--- [[ SIDEBAR ]] --
+-- SIDEBAR
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 180, 1, -120); Sidebar.Position = UDim2.new(0, 0, 0, 60); Sidebar.BackgroundColor3 = COLORS.SIDEBAR; Sidebar.BackgroundTransparency = 0.6; Sidebar.ZIndex = 11
 local SideLayout = Instance.new("UIListLayout", Sidebar); SideLayout.Padding = UDim.new(0, 8); SideLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ PERFIL (FIXADO NO RODAPÉ DA SIDEBAR) ]] --
+-- PERFIL
 local UserProfile = Instance.new("Frame", Main)
 UserProfile.Size = UDim2.new(0, 170, 0, 60); UserProfile.Position = UDim2.new(0, 5, 1, -70); UserProfile.BackgroundTransparency = 1; UserProfile.ZIndex = 20
 
@@ -99,7 +100,7 @@ local PremLbl = Instance.new("TextLabel", UserProfile)
 PremLbl.Size = UDim2.new(1, -65, 0, 15); PremLbl.Position = UDim2.new(0, 65, 0.55, 0); PremLbl.BackgroundTransparency = 1
 PremLbl.Text = "Premium User"; PremLbl.TextColor3 = COLORS.ACCENT; PremLbl.Font = Enum.Font.GothamMedium; PremLbl.TextSize = 12; PremLbl.TextXAlignment = 0; PremLbl.ZIndex = 21
 
--- [[ CONTAINER DE CONTEÚDO ]] --
+-- CONTAINER
 local Container = Instance.new("Frame", Main)
 Container.Size = UDim2.new(1, -210, 1, -80); Container.Position = UDim2.new(0, 195, 0, 65); Container.BackgroundTransparency = 1; Container.ZIndex = 11
 
@@ -124,7 +125,7 @@ createTab("PLAYER")
 createTab("FLY")
 createTab("SERVERS")
 
--- [[ COMPONENTES ]] --
+-- TOGGLE
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 55); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", card); l.Text = text; l.Size = UDim2.new(1, -70, 1, 0); l.Position = UDim2.new(0, 18, 0, 0); l.TextColor3 = COLORS.TEXT; l.Font = Enum.Font.GothamSemibold; l.TextSize = 15; l.BackgroundTransparency = 1; l.TextXAlignment = 0; l.ZIndex = 17
@@ -139,7 +140,7 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ LÓGICA DAS FUNÇÕES ]] --
+-- LÓGICA
 _G.AutoPurchase = false
 task.spawn(function()
     while task.wait(0.1) do
