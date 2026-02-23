@@ -1,7 +1,7 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - TRAIL & FIX UPDATE
-    - Rastro (Trail) azul neon ao arrastar o ícone
-    - Restaurado abas FLY e SERVERS
+    🩴 CHINELÃO PREMIUM - FINAL FIX
+    - Corrigido: Itens aparecendo em todas as abas (Fly, Servers, etc)
+    - Rastro (Trail) Neon no ícone minimizado
     - Sistema de Arrastar Blindado
 ]]
 
@@ -37,37 +37,22 @@ local COLORS = {
 -- [[ SISTEMA DE ARRASTAR COM RASTRO ]] --
 local function makeDraggable(gui, hasTrail)
     local dragging, dragInput, dragStart, startPos
-
     local function createTrail()
         if not hasTrail then return end
         local trail = Instance.new("Frame", gui.Parent)
-        trail.Size = gui.Size
-        trail.Position = gui.Position
-        trail.BackgroundColor3 = COLORS.ACCENT
-        trail.BackgroundTransparency = 0.5
-        trail.BorderSizePixel = 0
+        trail.Size = gui.Size; trail.Position = gui.Position
+        trail.BackgroundColor3 = COLORS.ACCENT; trail.BackgroundTransparency = 0.5; trail.BorderSizePixel = 0
         Instance.new("UICorner", trail).CornerRadius = gui:FindFirstChildOfClass("UICorner").CornerRadius
-        
-        TweenService:Create(trail, TweenInfo.new(0.4), {
-            Size = UDim2.fromOffset(0,0),
-            BackgroundTransparency = 1
-        }):Play()
+        TweenService:Create(trail, TweenInfo.new(0.4), {Size = UDim2.fromOffset(0,0), BackgroundTransparency = 1}):Play()
         task.delay(0.4, function() trail:Destroy() end)
     end
-
     gui.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true; dragStart = input.Position; startPos = gui.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
         end
     end)
-
-    gui.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
-    end)
-
+    gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
             if hasTrail then createTrail() end
@@ -78,7 +63,7 @@ local function makeDraggable(gui, hasTrail)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaPremium_VFinal"
+sg.Name = "ChinelaPremium_V100"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -91,8 +76,8 @@ Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
-OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1
-OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
+OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"
+OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
@@ -101,10 +86,10 @@ Main.BackgroundColor3 = COLORS.BG; Instance.new("UICorner", Main).CornerRadius =
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
 local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(0, 250, 0, 50); Title.Position = UDim2.new(0, 20, 0, 0)
-Title.Text = "CHINELÃO PREMIUM"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Size = UDim2.new(0, 250, 0, 50); Title.Position = UDim2.new(0, 20, 0, 0); Title.Text = "CHINELÃO PREMIUM"
+Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Botões Controle
+-- Botões de Controle
 local function createControlBtn(text, pos, hoverColor)
     local btn = Instance.new("TextButton", Main)
     btn.Size = UDim2.fromOffset(35, 35); btn.Position = pos; btn.BackgroundColor3 = COLORS.BTN_BG; btn.Text = text; btn.TextColor3 = COLORS.TEXT
@@ -120,7 +105,7 @@ local function ToggleUI() Main.Visible = not Main.Visible; OpenBtn.Visible = not
 MinBtn.MouseButton1Click:Connect(ToggleUI); OpenBtn.MouseButton1Click:Connect(ToggleUI)
 CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 
--- [[ SIDEBAR ]] --
+-- [[ SIDEBAR E CONTAINER ]] --
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 140, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 60); Sidebar.BackgroundTransparency = 1
 Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
@@ -129,14 +114,19 @@ local Container = Instance.new("Frame", Main)
 Container.Size = UDim2.new(1, -185, 1, -80); Container.Position = UDim2.new(0, 170, 0, 65); Container.BackgroundTransparency = 1
 
 local function createPage()
-    local p = Instance.new("Frame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; return p
+    local p = Instance.new("ScrollingFrame", Container) -- Usei ScrollingFrame pra garantir que apareça
+    p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 0
+    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8)
+    return p
 end
+
 local pPlayer = createPage(); local pServers = createPage(); local pFly = createPage(); local pHelper = createPage()
 pPlayer.Visible = true
 
--- Funções Toggle
+-- [[ FUNÇÃO TOGGLE CARD ]] --
 local function createToggle(parent, text, callback)
-    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, 0, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    local card = Instance.new("Frame", parent)
+    card.Size = UDim2.new(1, -10, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
     local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0); label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = Enum.TextXAlignment.Left
     local tglBG = Instance.new("TextButton", card); tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10); tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
     local circle = Instance.new("Frame", tglBG); circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8); circle.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
@@ -151,15 +141,20 @@ end
 
 local function createTab(name, page)
     local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 13; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    b.MouseButton1Click:Connect(function() pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false; page.Visible = true end)
+    b.MouseButton1Click:Connect(function()
+        pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
+        page.Visible = true
+    end)
 end
+
 createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- [[ RECONSTRUÇÃO DAS ABAS ]] --
-Instance.new("UIListLayout", pPlayer).Padding = UDim.new(0, 8)
+-- [[ AGORA SIM: ADICIONANDO OS ITENS NAS PÁGINAS CORRETAS ]] --
+
+-- ABA PLAYER
 createToggle(pPlayer, "Instant Grab Brainrot", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
 
-Instance.new("UIListLayout", pServers).Padding = UDim.new(0, 8)
+-- ABA SERVERS (AQUI ESTAVA O ERRO)
 createToggle(pServers, "Server Premium (Hop)", function(s)
     if s then
         local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")) end)
@@ -171,12 +166,11 @@ createToggle(pServers, "Server Premium (Hop)", function(s)
     end
 end)
 
-Instance.new("UIListLayout", pFly).Padding = UDim.new(0, 8)
+-- ABA FLY (AQUI TAMBÉM)
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
 
-Instance.new("UIListLayout", pHelper).Padding = UDim.new(0, 8)
+-- ABA HELPER
 createToggle(pHelper, "Run Auto-Loader", function(s) if s then loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() end end)
 
--- Ativar Arrastar com Rastro no Minimizado
-makeDraggable(Main, false)
-makeDraggable(OpenBtn, true) -- Este ganha o rastro!
+-- Finalização
+makeDraggable(Main, false); makeDraggable(OpenBtn, true)
