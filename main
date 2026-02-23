@@ -1,6 +1,6 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - BOUNCE UPDATE
-    - Efeito de Salto (Bounce) ao abrir e minimizar
+    🩴 CHINELÃO PREMIUM - POP JUMP UPDATE
+    - Efeito de "Pulo" (Pop-up) ao abrir e minimizar
     - Rastro de bordas neon preservado
     - Sistema de Arrastar Blindado
 ]]
@@ -65,7 +65,7 @@ local function makeDraggable(gui, hasTrail)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_BounceEdition"
+sg.Name = "ChinelaoPremium_PopEdition"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
@@ -86,15 +86,16 @@ Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ LÓGICA DE BOUNCE AO ABRIR/FECHAR ]] --
-local function BounceAnimate(gui, show)
+-- [[ LÓGICA DE PULO (POP) ]] --
+local function PopAnimate(gui, show)
     local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
     if show then
         gui.Size = UDim2.fromOffset(0, 0)
         gui.Visible = true
-        TweenService:Create(gui, TweenInfo.new(0.6, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+        -- Efeito Back/Out cria o "pulo"
+        TweenService:Create(gui, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = targetSize}):Play()
     else
-        local tween = TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
+        local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
         tween:Play()
         tween.Completed:Connect(function() gui.Visible = false end)
     end
@@ -116,9 +117,9 @@ end
 local MinBtn = createControlBtn("—", UDim2.new(1, -90, 0, 10), COLORS.HOVER_MIN)
 local CloseBtn = createControlBtn("X", UDim2.new(1, -45, 0, 10), COLORS.HOVER_CLOSE)
 
-MinBtn.MouseButton1Click:Connect(function() BounceAnimate(Main, false); task.wait(0.2); BounceAnimate(OpenBtn, true) end)
-OpenBtn.MouseButton1Click:Connect(function() BounceAnimate(OpenBtn, false); task.wait(0.2); BounceAnimate(Main, true) end)
-CloseBtn.MouseButton1Click:Connect(function() BounceAnimate(Main, false); task.wait(0.3); sg:Destroy() end)
+MinBtn.MouseButton1Click:Connect(function() PopAnimate(Main, false); task.wait(0.1); PopAnimate(OpenBtn, true) end)
+OpenBtn.MouseButton1Click:Connect(function() PopAnimate(OpenBtn, false); task.wait(0.1); PopAnimate(Main, true) end)
+CloseBtn.MouseButton1Click:Connect(function() PopAnimate(Main, false); task.wait(0.2); sg:Destroy() end)
 
 -- [ Sidebar e Conteúdo ] --
 local Sidebar = Instance.new("Frame", Main)
