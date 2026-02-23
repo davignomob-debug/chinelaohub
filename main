@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - SMOOTH POP UPDATE
-    - Movimento de "pulo" único (estilo Back Out)
-    - Sem batidas/oscilações repetitivas
-    - Expansão e encolhimento pelo centro (AnchorPoint 0.5)
+    🩴 CHINELÃO PREMIUM - CLEAN SMOOTH UPDATE
+    - Entrada e saída ultra lisas (Sem batidas)
+    - Expansão centralizada (AnchorPoint 0.5)
+    - Rastro de borda neon 0.8 preservado
 ]]
 
 local Players = game:GetService("Players")
@@ -66,7 +66,7 @@ local function makeDraggable(gui, hasTrail)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_SmoothPop"
+sg.Name = "ChinelaoPremium_Clean"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
@@ -89,17 +89,16 @@ Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- [[ ANIMAÇÃO POP SUAVE (BACK OUT) ]] --
-local function SmoothPop(gui, show)
+-- [[ ANIMAÇÃO LISA (SINE) ]] --
+local function CleanAnimate(gui, show)
     local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
     if show then
         gui.Size = UDim2.fromOffset(0, 0)
         gui.Visible = true
-        -- Estilo 'Back' cria o pulo sem as batidas repetitivas do 'Bounce'
-        TweenService:Create(gui, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+        -- Sine Out é a curva mais suave, sem ultrapassar o tamanho ou bater
+        TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = targetSize}):Play()
     else
-        -- Fecha encolhendo pro centro de forma rápida
-        local tween = TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
+        local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
         tween:Play()
         tween.Completed:Connect(function() gui.Visible = false end)
     end
@@ -121,9 +120,9 @@ end
 local MinBtn = createControlBtn("—", UDim2.new(1, -90, 0, 10), COLORS.HOVER_MIN)
 local CloseBtn = createControlBtn("X", UDim2.new(1, -45, 0, 10), COLORS.HOVER_CLOSE)
 
-MinBtn.MouseButton1Click:Connect(function() SmoothPop(Main, false); task.wait(0.2); SmoothPop(OpenBtn, true) end)
-OpenBtn.MouseButton1Click:Connect(function() SmoothPop(OpenBtn, false); task.wait(0.2); SmoothPop(Main, true) end)
-CloseBtn.MouseButton1Click:Connect(function() SmoothPop(Main, false); task.wait(0.3); sg:Destroy() end)
+MinBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait(0.2); CleanAnimate(OpenBtn, true) end)
+OpenBtn.MouseButton1Click:Connect(function() CleanAnimate(OpenBtn, false); task.wait(0.2); CleanAnimate(Main, true) end)
+CloseBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait(0.3); sg:Destroy() end)
 
 -- [ Sidebar e Conteúdo ] --
 local Sidebar = Instance.new("Frame", Main)
