@@ -29,7 +29,7 @@ local COLORS = {
 }
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Instant_V2"
+sg.Name = "ChinelaoPremium_TechPerfect_Edition"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -62,7 +62,7 @@ local function CleanAnimate(gui, show)
     end
 end
 
--- CONTROLES (X e —)
+-- CONTROLES
 local MinBtn = Instance.new("TextButton", Main)
 MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0, 10); MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 18; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
 
@@ -108,21 +108,32 @@ local function createTab(name, page)
 end
 createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- [[ LÓGICA INSTANT GRAB V2 (FORÇAR ZERO SEGUNDOS) ]] --
+-- [[ LÓGICA TECH PERFECT (INSTANT + NO COOLDOWN) ]] --
+_G.TechPerfectGrab = false
 task.spawn(function()
-    while task.wait(0.5) do
-        if _G.InstantGrabEnabled then
-            for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("ProximityPrompt") then
-                    v.HoldDuration = 0
+    while task.wait() do -- Loop ultra rápido
+        if _G.TechPerfectGrab then
+            for _, prompt in pairs(game:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
+                    prompt.ClickableDuringHold = true
+                    -- Remove o cooldown forçando o prompt a estar sempre disponível
+                    if prompt.Enabled == false then prompt.Enabled = true end 
                 end
             end
         end
     end
 end)
 
-createToggle(pPlayer, "Instant Grab (No Hold)", function(s)
-    _G.InstantGrabEnabled = s
+-- Conexão direta para ignorar animações do servidor
+ProximityPromptService.PromptButtonHoldBegan:Connect(function(p)
+    if _G.TechPerfectGrab then
+        fireproximityprompt(p)
+    end
+end)
+
+createToggle(pPlayer, "Instant Grab (Tech Perfect)", function(s)
+    _G.TechPerfectGrab = s
     if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end
 end)
 
@@ -139,4 +150,17 @@ end)
 
 createToggle(pHelper, "auto load script", function(active)
     if active then
-        local queue = syn and syn.queue_
+        local queue = syn and syn.queue_teleport or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+        if queue then queue('loadstring(game:HttpGet("LINK_AQUI"))()') end
+    end
+end)
+
+-- DRAG
+local function makeDraggable(gui)
+    local dragging, dragInput, dragStart, startPos
+    gui.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = gui.Position end end)
+    gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
+    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
+    UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+end
+makeDraggable(Main); makeDraggable(OpenBtn)
