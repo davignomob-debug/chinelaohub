@@ -102,8 +102,11 @@ local function createPage(name)
     Instance.new("UIListLayout", p).Padding = UDim.new(0, 12); pages[name] = p; return p
 end
 
+-- CRIAÇÃO DAS PÁGINAS (PLAYER, FARM, FLY, SERVERS)
 local pPlayer = createPage("PLAYER"); pPlayer.Visible = true
-local pFly = createPage("FLY"); local pServer = createPage("SERVERS")
+local pFarm = createPage("FARM")
+local pFly = createPage("FLY")
+local pServer = createPage("SERVERS")
 
 local function createTab(name)
     local b = Instance.new("TextButton", Sidebar)
@@ -111,7 +114,11 @@ local function createTab(name)
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function() for _, v in pairs(pages) do v.Visible = false end; pages[name].Visible = true end)
 end
-createTab("PLAYER"); createTab("FLY"); createTab("SERVERS")
+
+createTab("PLAYER")
+createTab("FARM")
+createTab("FLY")
+createTab("SERVERS")
 
 -- [[ COMPONENTE SLIDER ]] --
 local function createSlider(parent, text, min, max, callback)
@@ -168,23 +175,25 @@ local function createToggle(parent, text, callback)
     end)
 end
 
--- [[ FUNÇÕES NA ABA PLAYER ]] --
+-- [[ ABA PLAYER ]] --
 createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
+createSlider(pPlayer, "Walk Speed", 32, 300, function(v) _G.WalkSpeedValue = v end)
 
-createSlider(pPlayer, "Walk Speed", 32, 300, function(v)
-    _G.WalkSpeedValue = v
-end)
+-- [[ ABA FARM ]] --
+-- Você pode adicionar botões de farm aqui usando createToggle(pFarm, "Nome", function(s) ... end)
 
+-- [[ ABA FLY ]] --
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
+
+-- [[ ABA SERVERS ]] --
 createToggle(pServer, "Rejoin Server", function(s) if s then TeleportService:Teleport(game.PlaceId, LocalPlayer) end end)
 
--- [[ LOOP PARA VELOCIDADE PERMANENTE ]] --
+-- [[ LOOPS TÉCNICOS ]] --
 task.spawn(function()
     while true do
         task.wait(0.1)
         pcall(function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                -- Se a velocidade do jogo for diferente da que você escolheu no slider, o script força de volta
                 if LocalPlayer.Character.Humanoid.WalkSpeed ~= _G.WalkSpeedValue then
                     LocalPlayer.Character.Humanoid.WalkSpeed = _G.WalkSpeedValue
                 end
@@ -193,7 +202,6 @@ task.spawn(function()
     end
 end)
 
--- [[ LOOP AUTO PURCHASE ]] --
 task.spawn(function()
     while true do
         task.wait(0.1)
