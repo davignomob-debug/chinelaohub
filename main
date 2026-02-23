@@ -7,10 +7,6 @@ local UserInputService = game:GetService("UserInputService")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 local LocalPlayer = Players.LocalPlayer
 
--- Mata qualquer execução anterior para não bugar
-_G.TechPerfectGrab = nil 
-_G.InstantGrabActive = nil
-
 local function GetSafeGui()
     if gethui then return gethui() end
     if CoreGui then return CoreGui end
@@ -27,137 +23,30 @@ local COLORS = {
     BTN_BG = Color3.fromRGB(30, 41, 59),
     CARD_BG = Color3.fromRGB(10, 10, 15),
     TOGGLE_ON = Color3.fromRGB(34, 211, 238),
-    TOGGLE_OFF = Color3.fromRGB(40, 45, 60)
+    TOGGLE_OFF = Color3.fromRGB(40, 45, 60),
+    HOVER_MIN = Color3.fromRGB(0, 190, 255),
+    HOVER_CLOSE = Color3.fromRGB(255, 0, 0)
 }
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "CHINELAO_PREMIUM_V3_FINAL"
+sg.Name = "ChinelaoPremium_VOLTOU_AO_NORMAL"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ BOTÃO ABRIR ]] --
+-- [[ BOTÃO MINIMIZADO ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
-OpenBtn.Size = UDim2.fromOffset(60, 60)
-OpenBtn.Position = UDim2.new(0, 50, 0.5, 0)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20)
-OpenBtn.Visible = false
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
+OpenBtn.AnchorPoint = Vector2.new(0.5, 0.5); OpenBtn.Size = UDim2.fromOffset(60, 60); OpenBtn.Position = UDim2.new(0, 50, 0.5, 0)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Visible = false
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12); Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
-OpenText.Size = UDim2.new(1, 0, 1, 0)
-OpenText.BackgroundTransparency = 1
-OpenText.Text = "CHINELAO"
-OpenText.TextColor3 = COLORS.ACCENT
-OpenText.Font = Enum.Font.GothamBlack
-OpenText.TextSize = 10
+OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
-Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Size = UDim2.fromOffset(550, 350)
-Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-Main.BackgroundColor3 = COLORS.BG
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
-Instance.new("UIStroke", Main).Color = COLORS.STROKE
+Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.Size = UDim2.fromOffset(550, 350)
+Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15); Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
 local PanelTitle = Instance.new("TextLabel", Main)
-PanelTitle.Size = UDim2.new(0, 250, 0, 50)
-PanelTitle.Position = UDim2.new(0, 20, 0, 0)
-PanelTitle.BackgroundTransparency = 1
-PanelTitle.Text = "CHINELÃO PREMIUM"
-PanelTitle.TextColor3 = COLORS.TEXT
-PanelTitle.Font = Enum.Font.GothamBold
-PanelTitle.TextSize = 18
-PanelTitle.TextXAlignment = Enum.TextXAlignment.Left
-
--- CONTROLES
-local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Size = UDim2.fromOffset(35, 35); CloseBtn.Position = UDim2.new(1, -45, 0, 10)
-CloseBtn.BackgroundColor3 = COLORS.BTN_BG; CloseBtn.Text = "X"; CloseBtn.TextColor3 = Color3.new(1,0,0); CloseBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
-
-CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
-
--- ABAS
-local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 140, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 60); Sidebar.BackgroundTransparency = 1
-Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
-
-local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -185, 1, -80); Container.Position = UDim2.new(0, 170, 0, 65); Container.BackgroundTransparency = 1
-
-local function createPage()
-    local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 0
-    Instance.new("UIListLayout", p).Padding = UDim.new(0, 8); return p
-end
-local pPlayer, pServers, pFly = createPage(), createPage(), createPage()
-pPlayer.Visible = true
-
-local function createToggle(parent, text, callback)
-    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0); label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = 0
-    local tglBG = Instance.new("TextButton", card); tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10); tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
-    local circle = Instance.new("Frame", tglBG); circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8); circle.BackgroundColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
-    local active = false
-    tglBG.MouseButton1Click:Connect(function()
-        active = not active
-        TweenService:Create(circle, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
-        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF}):Play()
-        callback(active)
-    end)
-end
-
-local function createTab(name, page)
-    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 14; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    b.MouseButton1Click:Connect(function() pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; page.Visible = true end)
-end
-createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly)
-
--- [[ LÓGICA 100% INTERNA (SEM LIGAÇÃO COM TECH PERFECT) ]] --
-_G.ChinelaoGrab = false
-task.spawn(function()
-    while task.wait(0.5) do
-        if _G.ChinelaoGrab then
-            for _, obj in pairs(game:GetDescendants()) do
-                if obj:IsA("ProximityPrompt") then
-                    obj.HoldDuration = 0
-                end
-            end
-        end
-    end
-end)
-
-ProximityPromptService.PromptButtonHoldBegan:Connect(function(prompt)
-    if _G.ChinelaoGrab then
-        if fireproximityprompt then
-            fireproximityprompt(prompt)
-        end
-    end
-end)
-
--- FUNÇÕES DOS BOTÕES
-createToggle(pPlayer, "Instant Grab (Original)", function(s)
-    _G.ChinelaoGrab = s
-end)
-
-createToggle(pServers, "Premium Server", function(s)
-    if s then
-        local res = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
-        if res and res.data then TeleportService:TeleportToPlaceInstance(game.PlaceId, res.data[1].id) end
-    end
-end)
-
-createToggle(pFly, "Fly GUI V3", function(s)
-    if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end
-end)
-
--- ARRASTAR
-local function makeDraggable(gui)
-    local dragging, dragInput, dragStart, startPos
-    gui.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = gui.Position end end)
-    gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
-    UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then local delta = input.Position - dragStart; gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
-    UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-end
-makeDraggable(Main)
+PanelTitle.Size = UDim2.new(0, 250, 0, 50); PanelTitle.Position = UDim2.new(0, 20, 0, 0); PanelTitle.BackgroundTransparency = 1; PanelTitle.Text = "CHINELÃO PREMIUM";
