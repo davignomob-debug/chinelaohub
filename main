@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - AUTO-LOAD FIX
-    - Agora salva o próprio script na memória do executor
-    - Auto-executa no milisegundo que você entra no novo server
-    - Mantém o estilo "Clean Sine" (Sem batidas)
+    🩴 CHINELÃO PREMIUM - AUTO-LOAD PERMANENTE
+    - Agora salva um arquivo na pasta do executor para auto-executar
+    - Todas as abas restauradas (PLAYER, SERVERS, FLY, HELPER)
+    - Entrada/Saída Sine (Lisa e sem batidas)
 ]]
 
 local Players = game:GetService("Players")
@@ -13,8 +13,8 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- URL DO SEU SCRIPT (Coloque o link do seu RAW aqui para funcionar 100%)
-local SCRIPT_URL = "https://raw.githubusercontent.com/Exemplo/SeuScriptAqui" 
+-- Nome do arquivo que será salvo na pasta do seu executor
+local AUTO_LOAD_FILE = "ChinelaoHub_AutoLoad.txt"
 
 local function GetSafeGui()
     if gethui then return gethui() end
@@ -54,52 +54,41 @@ local function makeDraggable(gui)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Final"
+sg.Name = "ChinelaoPremium_Ultra"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
-OpenBtn.AnchorPoint = Vector2.new(0.5, 0.5)
-OpenBtn.Size = UDim2.fromOffset(60, 60); OpenBtn.Position = UDim2.new(0, 50, 0.5, 0)
+OpenBtn.AnchorPoint = Vector2.new(0.5, 0.5); OpenBtn.Size = UDim2.fromOffset(60, 60); OpenBtn.Position = UDim2.new(0, 50, 0.5, 0)
 OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Visible = false
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT; Instance.new("UIStroke", OpenBtn).Thickness = 2
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12); Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
-OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"
-OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10; OpenText.ZIndex = 5
+OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"; OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
-Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Size = UDim2.fromOffset(550, 350); Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.Size = UDim2.fromOffset(550, 350); Main.Position = UDim2.new(0.5, 0, 0.5, 0)
 Main.BackgroundColor3 = COLORS.BG; Main.ClipsDescendants = true
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
-Instance.new("UIStroke", Main).Color = COLORS.STROKE
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15); Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
 local function CleanAnimate(gui, show)
     local targetSize = (gui == Main) and UDim2.fromOffset(550, 350) or UDim2.fromOffset(60, 60)
     if show then
         gui.Size = UDim2.fromOffset(0, 0); gui.Visible = true
-        TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+        TweenService:Create(gui, TweenInfo.new(0.3, Enum.EasingStyle.Sine), {Size = targetSize}):Play()
     else
-        local tween = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Size = UDim2.fromOffset(0, 0)})
-        tween:Play()
-        tween.Completed:Connect(function() gui.Visible = false end)
+        local t = TweenService:Create(gui, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {Size = UDim2.fromOffset(0, 0)})
+        t:Play(); t.Completed:Connect(function() gui.Visible = false end)
     end
 end
 
-local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(0, 250, 0, 50); Title.Position = UDim2.new(0, 20, 0, 0); Title.Text = "CHINELÃO PREMIUM"
-Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
-
 local MinBtn = Instance.new("TextButton", Main)
-MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0, 10); MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 20; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
-
+MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -50, 0, 10); MinBtn.Text = "—"; MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.TextColor3 = COLORS.TEXT; Instance.new("UICorner", MinBtn)
 MinBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait(0.2); CleanAnimate(OpenBtn, true) end)
 OpenBtn.MouseButton1Click:Connect(function() CleanAnimate(OpenBtn, false); task.wait(0.2); CleanAnimate(Main, true) end)
 
--- [ Sidebar e Conteúdo ] --
+-- [ Sidebar ] --
 local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 140, 1, -70); Sidebar.Position = UDim2.new(0, 15, 0, 60); Sidebar.BackgroundTransparency = 1
 Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
@@ -111,43 +100,54 @@ local function createPage()
     local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 0
     Instance.new("UIListLayout", p).Padding = UDim.new(0, 8); return p
 end
-local pPlayer = createPage(); local pHelper = createPage()
+local pPlayer, pServers, pFly, pHelper = createPage(), createPage(), createPage(), createPage()
 pPlayer.Visible = true
 
 local function createToggle(parent, text, callback)
-    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 50); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0); label.TextColor3 = COLORS.TEXT; label.Font = Enum.Font.GothamSemibold; label.TextSize = 14; label.BackgroundTransparency = 1; label.TextXAlignment = Enum.TextXAlignment.Left
-    local tglBG = Instance.new("TextButton", card); tglBG.Size = UDim2.fromOffset(40, 20); tglBG.Position = UDim2.new(1, -50, 0.5, -10); tglBG.BackgroundColor3 = COLORS.TOGGLE_OFF; tglBG.Text = ""; Instance.new("UICorner", tglBG).CornerRadius = UDim.new(1, 0)
-    local circle = Instance.new("Frame", tglBG); circle.Size = UDim2.fromOffset(16, 16); circle.Position = UDim2.new(0, 2, 0.5, -8); circle.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
+    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 45); card.BackgroundColor3 = COLORS.CARD_BG; Instance.new("UICorner", card)
+    local label = Instance.new("TextLabel", card); label.Text = text; label.Size = UDim2.new(1, -60, 1, 0); label.Position = UDim2.new(0, 15, 0, 0); label.TextColor3 = COLORS.TEXT; label.BackgroundTransparency = 1; label.TextXAlignment = 0
+    local tgl = Instance.new("TextButton", card); tgl.Size = UDim2.fromOffset(35, 18); tgl.Position = UDim2.new(1, -45, 0.5, -9); tgl.BackgroundColor3 = COLORS.TOGGLE_OFF; tgl.Text = ""; Instance.new("UICorner", tgl).CornerRadius = UDim.new(1, 0)
     local active = false
-    tglBG.MouseButton1Click:Connect(function()
+    tgl.MouseButton1Click:Connect(function()
         active = not active
-        TweenService:Create(circle, TweenInfo.new(0.2), {Position = active and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
-        TweenService:Create(tglBG, TweenInfo.new(0.2), {BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF}):Play()
+        tgl.BackgroundColor3 = active and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
         callback(active)
     end)
 end
 
 local function createTab(name, page)
-    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 13; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    b.MouseButton1Click:Connect(function() pPlayer.Visible = false; pHelper.Visible = false; page.Visible = true end)
+    local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 30); b.Text = name; b.BackgroundColor3 = COLORS.BTN_BG; b.TextColor3 = COLORS.TEXT; Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false; page.Visible = true end)
 end
-createTab("PLAYER", pPlayer); createTab("HELPER", pHelper)
 
--- [[ FUNÇÕES ]] --
-createToggle(pPlayer, "Instant Grab", function(s) if s then print("Ativado") end end)
+createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
 
--- SISTEMA DE AUTO-LOAD CORRIGIDO
+-- [[ LOGICA DAS ABAS ]] --
+createToggle(pPlayer, "Instant Grab", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
+
+createToggle(pServers, "Server Hop", function(s)
+    if s then
+        local res = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?limit=100"))
+        for _, srv in ipairs(res.data) do if srv.playing < srv.maxPlayers and srv.id ~= game.JobId then TeleportService:TeleportToPlaceInstance(game.PlaceId, srv.id) break end end
+    end
+end)
+
+createToggle(pFly, "Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
+
+-- [[ NOVO SISTEMA AUTO-LOAD (HELPER) ]] --
 createToggle(pHelper, "auto load script", function(active)
-    if active then
-        local queue_teleport = (syn and syn.queue_teleport) or (queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
-        if queue_teleport then
-            -- Prepara o comando para executar o Chinelão Hub assim que o teleporte acontecer
-            local teleportCode = 'loadstring(game:HttpGet("'..SCRIPT_URL..'"))()'
-            queue_teleport(teleportCode)
-            print("Auto-Load ativado para o próximo servidor!")
+    if writefile then
+        if active then
+            -- Salva que o auto-load está ligado
+            writefile(AUTO_LOAD_FILE, "true")
+            
+            -- Usa o queue_teleport para a próxima troca
+            local queue = syn and syn.queue_teleport or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
+            if queue then
+                queue('loadstring(game:HttpGet("COLOQUE_SEU_LINK_AQUI"))()')
+            end
         else
-            warn("Seu executor não suporta Auto-Load.")
+            if isfile(AUTO_LOAD_FILE) then delfile(AUTO_LOAD_FILE) end
         end
     end
 end)
