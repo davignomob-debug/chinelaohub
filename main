@@ -1,14 +1,18 @@
 --[[ 
-    🩴 CHINELAO PREMIUM - MINIMIZE UPDATE
-    - Interface: Chilli Style
-    - Função: Minimizar / Restaurar
+    🩴 CHINELAO PREMIUM - FULL STABLE VERSION
+    - Abas: PLAYER | SERVERS | FLY | HELPER
+    - Funções: Minimizar, Fechar, Draggable
+    - Estilo: Chilli Hub Deep Sea
 ]]
 
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
+-- [[ PROTEÇÃO DE UI ]] --
 local function GetSafeGui()
     if gethui then return gethui() end
     if CoreGui then return CoreGui end
@@ -17,31 +21,26 @@ end
 
 local parentGui = GetSafeGui()
 
--- [[ CORES ]] --
+-- [[ PALETA DE CORES ]] --
 local COLORS = {
-    BG = Color3.fromRGB(5, 5, 10),
-    ACCENT = Color3.fromRGB(56, 189, 248),
+    BG = Color3.fromRGB(16, 24, 39),
+    GRAD_1 = Color3.fromRGB(12, 18, 32),
+    GRAD_2 = Color3.fromRGB(21, 30, 47),
+    GRAD_3 = Color3.fromRGB(10, 82, 120),
+    STROKE = Color3.fromRGB(56, 189, 248),
     TEXT = Color3.fromRGB(255, 255, 255),
+    ACCENT = Color3.fromRGB(34, 211, 238),
+    BTN = Color3.fromRGB(30, 41, 59),
     CARD = Color3.fromRGB(15, 20, 35)
 }
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_Minimizable"
+sg.Name = "ChinelaoPremium_Final"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
-local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.fromOffset(580, 350)
-Main.Position = UDim2.new(0.5, -290, 0.5, -175)
-Main.BackgroundColor3 = COLORS.BG
-Main.BorderSizePixel = 0
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
-local Stroke = Instance.new("UIStroke", Main)
-Stroke.Color = COLORS.ACCENT
-Stroke.Thickness = 1.5
-
--- [[ BOTÃO FLUTUANTE (PARA QUANDO ESTIVER MINIMIZADO) ]] --
+-- Botão Flutuante (Minimizado)
 local OpenBtn = Instance.new("TextButton", sg)
 OpenBtn.Size = UDim2.fromOffset(50, 50)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, -25)
@@ -52,53 +51,179 @@ OpenBtn.Font = Enum.Font.GothamBold
 OpenBtn.TextSize = 20
 OpenBtn.Visible = false
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
-local OpenStroke = Instance.new("UIStroke", OpenBtn)
-OpenStroke.Color = COLORS.ACCENT
-OpenStroke.Thickness = 2
+Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
 
--- [[ LÓGICA DE MINIMIZAR ]] --
-local function ToggleUI()
-    local isVisible = Main.Visible
-    Main.Visible = not isVisible
-    OpenBtn.Visible = isVisible
-end
+-- Frame Principal
+local Main = Instance.new("Frame", sg)
+Main.Size = UDim2.fromOffset(580, 350)
+Main.Position = UDim2.new(0.5, -290, 0.5, -175)
+Main.BackgroundColor3 = COLORS.BG
+Main.BorderSizePixel = 0
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 
--- Botão Minimizar (—)
-local MinimizeBtn = Instance.new("TextButton", Main)
-MinimizeBtn.Size = UDim2.fromOffset(30, 30)
-MinimizeBtn.Position = UDim2.new(1, -70, 0, 5)
-MinimizeBtn.Text = "—"
-MinimizeBtn.TextColor3 = COLORS.TEXT
-MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.TextSize = 18
-MinimizeBtn.Font = Enum.Font.GothamBold
+local BgGrad = Instance.new("UIGradient", Main)
+BgGrad.Rotation = 35
+BgGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0.00, COLORS.GRAD_1),
+    ColorSequenceKeypoint.new(0.55, COLORS.GRAD_2),
+    ColorSequenceKeypoint.new(1.00, COLORS.GRAD_3),
+})
+Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- Botão Fechar (X)
-local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Size = UDim2.fromOffset(30, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 5)
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.TextSize = 18
-CloseBtn.Font = Enum.Font.GothamBold
-
-MinimizeBtn.MouseButton1Click:Connect(ToggleUI)
-OpenBtn.MouseButton1Click:Connect(ToggleUI)
-CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
-
--- [ Resto da sua interface (Sidebar, Helper, etc.) vai aqui conforme os códigos anteriores ] --
+-- [[ BARRA DE TÍTULO & CONTROLES ]] --
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(0, 200, 0, 40)
-Title.Position = UDim2.new(0, 15, 0, 0)
+Title.Position = UDim2.new(0, 20, 0, 5)
 Title.Text = "CHINELAO PREMIUM"
-Title.TextColor3 = COLORS.ACCENT
+Title.TextColor3 = COLORS.TEXT
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
+Title.TextSize = 16
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Draggable (Funciona tanto no Main quanto no botão flutuante)
+local function ToggleUI()
+    Main.Visible = not Main.Visible
+    OpenBtn.Visible = not Main.Visible
+end
+
+local MinBtn = Instance.new("TextButton", Main)
+MinBtn.Size = UDim2.fromOffset(30, 30)
+MinBtn.Position = UDim2.new(1, -75, 0, 8)
+MinBtn.Text = "—"
+MinBtn.TextColor3 = COLORS.TEXT
+MinBtn.BackgroundTransparency = 1
+MinBtn.MouseButton1Click:Connect(ToggleUI)
+OpenBtn.MouseButton1Click:Connect(ToggleUI)
+
+local CloseBtn = Instance.new("TextButton", Main)
+CloseBtn.Size = UDim2.fromOffset(30, 30)
+CloseBtn.Position = UDim2.new(1, -40, 0, 8)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- [[ SIDEBAR ]] --
+local Sidebar = Instance.new("Frame", Main)
+Sidebar.Size = UDim2.new(0, 130, 1, -60)
+Sidebar.Position = UDim2.new(0, 15, 0, 50)
+Sidebar.BackgroundTransparency = 1
+Instance.new("UIListLayout", Sidebar).Padding = UDim.new(0, 8)
+
+local Container = Instance.new("Frame", Main)
+Container.Size = UDim2.new(1, -170, 1, -70)
+Container.Position = UDim2.new(0, 155, 0, 55)
+Container.BackgroundTransparency = 1
+
+local function createPage()
+    local p = Instance.new("Frame", Container)
+    p.Size = UDim2.new(1, 0, 1, 0)
+    p.BackgroundTransparency = 1
+    p.Visible = false
+    return p
+end
+
+local pPlayer = createPage()
+local pServers = createPage()
+local pFly = createPage()
+local pHelper = createPage()
+pPlayer.Visible = true
+
+local function createTab(name, page)
+    local b = Instance.new("TextButton", Sidebar)
+    b.Size = UDim2.new(1, 0, 0, 35)
+    b.BackgroundColor3 = COLORS.BTN
+    b.Text = name
+    b.TextColor3 = COLORS.TEXT
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 12
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    
+    b.MouseButton1Click:Connect(function()
+        pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false
+        page.Visible = true
+    end)
+end
+
+createTab("PLAYER", pPlayer)
+createTab("SERVERS", pServers)
+createTab("FLY", pFly)
+createTab("HELPER", pHelper)
+
+-- [[ CONTEÚDO DAS ABAS ]] --
+
+-- PLAYER
+local btnGrab = Instance.new("TextButton", pPlayer)
+btnGrab.Size = UDim2.new(1, 0, 0, 50)
+btnGrab.BackgroundColor3 = COLORS.ACCENT
+btnGrab.Text = "INSTANT GRAB BRAINROT"
+btnGrab.TextColor3 = COLORS.BG
+btnGrab.Font = Enum.Font.GothamBlack
+Instance.new("UICorner", btnGrab)
+btnGrab.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))()
+end)
+
+-- SERVERS
+local btnHop = Instance.new("TextButton", pServers)
+btnHop.Size = UDim2.new(1, 0, 0, 50)
+btnHop.BackgroundColor3 = Color3.fromRGB(140, 225, 0)
+btnHop.Text = "SERVER PREMIUM (HOP)"
+btnHop.Font = Enum.Font.GothamBlack
+Instance.new("UICorner", btnHop)
+btnHop.MouseButton1Click:Connect(function()
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    if success and result.data then
+        for _, s in ipairs(result.data) do
+            if s.playing < s.maxPlayers and s.id ~= game.JobId then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id)
+                break
+            end
+        end
+    end
+end)
+
+-- FLY
+local btnFly = Instance.new("TextButton", pFly)
+btnFly.Size = UDim2.new(1, 0, 0, 50)
+btnFly.BackgroundColor3 = COLORS.ACCENT
+btnFly.Text = "OPEN FLY GUI V3"
+btnFly.Font = Enum.Font.GothamBlack
+Instance.new("UICorner", btnFly)
+btnFly.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))()
+end)
+
+-- HELPER (ESTILO TOGGLE)
+local hCard = Instance.new("Frame", pHelper)
+hCard.Size = UDim2.new(1, 0, 0, 60)
+hCard.BackgroundColor3 = COLORS.CARD
+Instance.new("UICorner", hCard)
+
+local hLab = Instance.new("TextLabel", hCard)
+hLab.Text = "Auto Load Script"
+hLab.Size = UDim2.new(1, -70, 1, 0)
+hLab.Position = UDim2.new(0, 15, 0, 0)
+hLab.TextColor3 = COLORS.TEXT
+hLab.BackgroundTransparency = 1
+hLab.TextXAlignment = Enum.TextXAlignment.Left
+hLab.Font = Enum.Font.GothamBold
+
+local hRun = Instance.new("TextButton", pHelper)
+hRun.Size = UDim2.new(1, 0, 0, 50)
+hRun.Position = UDim2.new(0, 0, 0, 70)
+hRun.BackgroundColor3 = COLORS.CARD
+hRun.Text = "Run Auto-Loader"
+hRun.TextColor3 = COLORS.ACCENT
+hRun.Font = Enum.Font.GothamBold
+Instance.new("UICorner", hRun)
+hRun.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))()
+end)
+
+-- [[ DRAGGABLE ]] --
 local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
     frame.InputBegan:Connect(function(input)
@@ -116,8 +241,5 @@ local function makeDraggable(frame)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
 end
-
 makeDraggable(Main)
 makeDraggable(OpenBtn)
-
-print("🩴 CHINELAO PREMIUM: Minimizar Adicionado!")
