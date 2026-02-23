@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - GHOST TRAIL UPDATE
-    - Rastro com opacidade reduzida (mais sutil)
-    - Todas as abas funcionando perfeitamente
-    - Sistema de Arrastar Profissional
+    🩴 CHINELÃO PREMIUM - EDGE TRAIL UPDATE
+    - Rastro apenas nas BORDAS (não cobre o texto)
+    - Efeito de expansão Neon (Glow)
+    - Opacidade 0.8 balanceada
 ]]
 
 local Players = game:GetService("Players")
@@ -34,25 +34,39 @@ local COLORS = {
     HOVER_CLOSE = Color3.fromRGB(200, 0, 0)
 }
 
--- [[ SISTEMA DE ARRASTAR COM RASTRO SUAVE ]] --
+-- [[ SISTEMA DE ARRASTAR COM RASTRO DE BORDA ]] --
 local function makeDraggable(gui, hasTrail)
     local dragging, dragInput, dragStart, startPos
     
-    local function createTrail()
+    local function createEdgeTrail()
         if not hasTrail then return end
+        -- Cria um frame transparente apenas para o Stroke
         local trail = Instance.new("Frame", gui.Parent)
         trail.Size = gui.Size
         trail.Position = gui.Position
-        trail.BackgroundColor3 = COLORS.ACCENT
-        trail.BackgroundTransparency = 0.8 -- OPACIDADE REDUZIDA AQUI
+        trail.BackgroundTransparency = 1 -- Meio transparente para ver o texto
         trail.BorderSizePixel = 0
-        Instance.new("UICorner", trail).CornerRadius = gui:FindFirstChildOfClass("UICorner").CornerRadius
         
-        TweenService:Create(trail, TweenInfo.new(0.3), {
-            Size = UDim2.fromOffset(10, 10),
-            BackgroundTransparency = 1
+        local corner = Instance.new("UICorner", trail)
+        corner.CornerRadius = gui:FindFirstChildOfClass("UICorner").CornerRadius
+        
+        local stroke = Instance.new("UIStroke", trail)
+        stroke.Color = COLORS.ACCENT
+        stroke.Thickness = 2
+        stroke.Transparency = 0.8 -- Sua opacidade de 0.8 nas bordas
+        
+        -- Animação: A borda cresce e some
+        TweenService:Create(trail, TweenInfo.new(0.4), {
+            Size = gui.Size + UDim2.fromOffset(20, 20),
+            Position = gui.Position - UDim2.fromOffset(10, 10)
         }):Play()
-        task.delay(0.3, function() trail:Destroy() end)
+        
+        TweenService:Create(stroke, TweenInfo.new(0.4), {
+            Transparency = 1,
+            Thickness = 0
+        }):Play()
+        
+        task.delay(0.4, function() trail:Destroy() end)
     end
 
     gui.InputBegan:Connect(function(input)
@@ -70,7 +84,7 @@ local function makeDraggable(gui, hasTrail)
 
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
-            if hasTrail then createTrail() end
+            if hasTrail then createEdgeTrail() end
             local delta = input.Position - dragStart
             gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
@@ -78,20 +92,21 @@ local function makeDraggable(gui, hasTrail)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaPremium_GhostEdition"
+sg.Name = "ChinelaoPremium_EdgeEdition"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
 OpenBtn.Size = UDim2.fromOffset(60, 60); OpenBtn.Position = UDim2.new(0, 20, 0.5, -30)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Image = "rbxassetid://6073763717"
-OpenBtn.ImageColor3 = Color3.fromRGB(0, 30, 60); OpenBtn.Visible = false
+OpenBtn.BackgroundColor3 = Color3.fromRGB(5, 10, 20); OpenBtn.Image = "" -- Tirei imagem rbxassetid pra focar no texto
+OpenBtn.Visible = false
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", OpenBtn).Color = COLORS.ACCENT
+local MainStroke = Instance.new("UIStroke", OpenBtn)
+MainStroke.Color = COLORS.ACCENT; MainStroke.Thickness = 2
 
 local OpenText = Instance.new("TextLabel", OpenBtn)
 OpenText.Size = UDim2.new(1, 0, 1, 0); OpenText.BackgroundTransparency = 1; OpenText.Text = "CHINELAO\nHUB"
-OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10
+OpenText.TextColor3 = COLORS.ACCENT; OpenText.Font = Enum.Font.GothamBlack; OpenText.TextSize = 10; OpenText.ZIndex = 5
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
@@ -99,12 +114,11 @@ Main.Size = UDim2.fromOffset(550, 350); Main.Position = UDim2.new(0.5, -275, 0.5
 Main.BackgroundColor3 = COLORS.BG; Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
--- Barra Título
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(0, 250, 0, 50); Title.Position = UDim2.new(0, 20, 0, 0); Title.Text = "CHINELÃO PREMIUM"
 Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Controles
+-- Controles de Janela
 local function createControlBtn(text, pos, hoverColor)
     local btn = Instance.new("TextButton", Main)
     btn.Size = UDim2.fromOffset(35, 35); btn.Position = pos; btn.BackgroundColor3 = COLORS.BTN_BG; btn.Text = text; btn.TextColor3 = COLORS.TEXT
@@ -175,5 +189,4 @@ end)
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
 createToggle(pHelper, "Run Auto-Loader", function(s) if s then loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() end end)
 
--- Ativar Arrastar
 makeDraggable(Main, false); makeDraggable(OpenBtn, true)
