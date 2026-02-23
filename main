@@ -1,18 +1,14 @@
 --[[ 
-    🩴 CHINELAO PREMIUM - HELPER UPDATE
-    - Interface: Chilli Style (Sidebar + Cards)
-    - Aba Helper: Toggle Auto Load + Run Button
+    🩴 CHINELAO PREMIUM - MINIMIZE UPDATE
+    - Interface: Chilli Style
+    - Função: Minimizar / Restaurar
 ]]
 
 local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
-
 local LocalPlayer = Players.LocalPlayer
 
--- [[ FUNÇÃO PARA UI PROTEGIDA ]] --
 local function GetSafeGui()
     if gethui then return gethui() end
     if CoreGui then return CoreGui end
@@ -24,20 +20,14 @@ local parentGui = GetSafeGui()
 -- [[ CORES ]] --
 local COLORS = {
     BG = Color3.fromRGB(5, 5, 10),
-    SIDEBAR = Color3.fromRGB(10, 15, 25),
-    CARD = Color3.fromRGB(15, 20, 35),
     ACCENT = Color3.fromRGB(56, 189, 248),
     TEXT = Color3.fromRGB(255, 255, 255),
-    TOGGLE_ON = Color3.fromRGB(56, 189, 248),
-    TOGGLE_OFF = Color3.fromRGB(40, 50, 70)
+    CARD = Color3.fromRGB(15, 20, 35)
 }
-
--- [[ VARIÁVEIS DE ESTADO ]] --
-local AutoLoadEnabled = false
 
 -- [[ UI PRINCIPAL ]] --
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_HelperUpdate"
+sg.Name = "ChinelaoPremium_Minimizable"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
@@ -47,8 +37,57 @@ Main.Position = UDim2.new(0.5, -290, 0.5, -175)
 Main.BackgroundColor3 = COLORS.BG
 Main.BorderSizePixel = 0
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = COLORS.ACCENT
+Stroke.Thickness = 1.5
 
--- Barra Superior
+-- [[ BOTÃO FLUTUANTE (PARA QUANDO ESTIVER MINIMIZADO) ]] --
+local OpenBtn = Instance.new("TextButton", sg)
+OpenBtn.Size = UDim2.fromOffset(50, 50)
+OpenBtn.Position = UDim2.new(0, 20, 0.5, -25)
+OpenBtn.BackgroundColor3 = COLORS.BG
+OpenBtn.Text = "CP"
+OpenBtn.TextColor3 = COLORS.ACCENT
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextSize = 20
+OpenBtn.Visible = false
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(1, 0)
+local OpenStroke = Instance.new("UIStroke", OpenBtn)
+OpenStroke.Color = COLORS.ACCENT
+OpenStroke.Thickness = 2
+
+-- [[ LÓGICA DE MINIMIZAR ]] --
+local function ToggleUI()
+    local isVisible = Main.Visible
+    Main.Visible = not isVisible
+    OpenBtn.Visible = isVisible
+end
+
+-- Botão Minimizar (—)
+local MinimizeBtn = Instance.new("TextButton", Main)
+MinimizeBtn.Size = UDim2.fromOffset(30, 30)
+MinimizeBtn.Position = UDim2.new(1, -70, 0, 5)
+MinimizeBtn.Text = "—"
+MinimizeBtn.TextColor3 = COLORS.TEXT
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.TextSize = 18
+MinimizeBtn.Font = Enum.Font.GothamBold
+
+-- Botão Fechar (X)
+local CloseBtn = Instance.new("TextButton", Main)
+CloseBtn.Size = UDim2.fromOffset(30, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.TextSize = 18
+CloseBtn.Font = Enum.Font.GothamBold
+
+MinimizeBtn.MouseButton1Click:Connect(ToggleUI)
+OpenBtn.MouseButton1Click:Connect(ToggleUI)
+CloseBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
+
+-- [ Resto da sua interface (Sidebar, Helper, etc.) vai aqui conforme os códigos anteriores ] --
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(0, 200, 0, 40)
 Title.Position = UDim2.new(0, 15, 0, 0)
@@ -59,157 +98,26 @@ Title.TextSize = 14
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Sidebar
-local Sidebar = Instance.new("Frame", Main)
-Sidebar.Size = UDim2.new(0, 130, 1, -50)
-Sidebar.Position = UDim2.new(0, 10, 0, 40)
-Sidebar.BackgroundTransparency = 1
-local Layout = Instance.new("UIListLayout", Sidebar)
-Layout.Padding = UDim.new(0, 8)
-
--- Container de Páginas
-local Container = Instance.new("Frame", Main)
-Container.Size = UDim2.new(1, -160, 1, -50)
-Container.Position = UDim2.new(0, 150, 0, 40)
-Container.BackgroundTransparency = 1
-
-local function createPage()
-    local p = Instance.new("Frame", Container)
-    p.Size = UDim2.new(1, 0, 1, 0)
-    p.BackgroundTransparency = 1
-    p.Visible = false
-    return p
-end
-
-local PagePlayer = createPage()
-local PageServers = createPage()
-local PageFly = createPage()
-local PageHelper = createPage()
-PageHelper.Visible = true -- Começar na Helper para você ver o novo visual
-
--- Botões Sidebar
-local function createTabBtn(name, page)
-    local btn = Instance.new("TextButton", Sidebar)
-    btn.Size = UDim2.new(1, 0, 0, 35)
-    btn.BackgroundColor3 = COLORS.SIDEBAR
-    btn.Text = name
-    btn.TextColor3 = COLORS.TEXT
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 12
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    
-    btn.MouseButton1Click:Connect(function()
-        for _, p in pairs(Container:GetChildren()) do p.Visible = false end
-        page.Visible = true
-    end)
-    return btn
-end
-
-createTabBtn("PLAYER", PagePlayer)
-createTabBtn("SERVERS", PageServers)
-createTabBtn("FLY", PageFly)
-local btnHelper = createTabBtn("HELPER", PageHelper)
-btnHelper.BackgroundColor3 = COLORS.ACCENT
-btnHelper.TextColor3 = COLORS.BG
-
--- [[ CONTEÚDO ABA HELPER (IGUAL À IMAGEM) ]] --
-local HelperTitle = Instance.new("TextLabel", PageHelper)
-HelperTitle.Text = "HELPER"
-HelperTitle.Size = UDim2.new(0, 100, 0, 30)
-HelperTitle.TextColor3 = COLORS.ACCENT
-HelperTitle.Font = Enum.Font.GothamBold
-HelperTitle.TextSize = 18
-HelperTitle.BackgroundTransparency = 1
-HelperTitle.TextXAlignment = Enum.TextXAlignment.Left
-
--- Card do Auto Load
-local AutoLoadCard = Instance.new("Frame", PageHelper)
-AutoLoadCard.Size = UDim2.new(1, -10, 0, 60)
-AutoLoadCard.Position = UDim2.new(0, 0, 0, 40)
-AutoLoadCard.BackgroundColor3 = COLORS.CARD
-Instance.new("UICorner", AutoLoadCard)
-
-local AutoLoadText = Instance.new("TextLabel", AutoLoadCard)
-AutoLoadText.Text = "Auto Load Script"
-AutoLoadText.Size = UDim2.new(0, 200, 1, 0)
-AutoLoadText.Position = UDim2.new(0, 15, 0, 0)
-AutoLoadText.TextColor3 = COLORS.TEXT
-AutoLoadText.Font = Enum.Font.GothamSemibold
-AutoLoadText.TextSize = 16
-AutoLoadText.BackgroundTransparency = 1
-AutoLoadText.TextXAlignment = Enum.TextXAlignment.Left
-
--- Toggle (Interruptor)
-local ToggleBG = Instance.new("TextButton", AutoLoadCard)
-ToggleBG.Size = UDim2.fromOffset(45, 22)
-ToggleBG.Position = UDim2.new(1, -60, 0.5, -11)
-ToggleBG.BackgroundColor3 = COLORS.TOGGLE_OFF
-ToggleBG.Text = ""
-Instance.new("UICorner", ToggleBG).CornerRadius = UDim.new(1, 0)
-
-local ToggleCircle = Instance.new("Frame", ToggleBG)
-ToggleCircle.Size = UDim2.fromOffset(18, 18)
-ToggleCircle.Position = UDim2.new(0, 2, 0.5, -9)
-ToggleCircle.BackgroundColor3 = COLORS.TEXT
-Instance.new("UICorner", ToggleCircle).CornerRadius = UDim.new(1, 0)
-
-ToggleBG.MouseButton1Click:Connect(function()
-    AutoLoadEnabled = not AutoLoadEnabled
-    local targetPos = AutoLoadEnabled and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
-    local targetColor = AutoLoadEnabled and COLORS.TOGGLE_ON or COLORS.TOGGLE_OFF
-    
-    TweenService:Create(ToggleCircle, TweenInfo.new(0.2), {Position = targetPos}):Play()
-    TweenService:Create(ToggleBG, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
-    
-    if AutoLoadEnabled then
-        print("Auto Load Ativado")
-    end
-end)
-
--- Botão Run Auto
-local RunAutoBtn = Instance.new("TextButton", PageHelper)
-RunAutoBtn.Size = UDim2.new(1, -10, 0, 50)
-RunAutoBtn.Position = UDim2.new(0, 0, 0, 110)
-RunAutoBtn.BackgroundColor3 = COLORS.CARD
-RunAutoBtn.Text = "Run Auto-"
-RunAutoBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
-RunAutoBtn.Font = Enum.Font.GothamSemibold
-RunAutoBtn.TextSize = 16
-RunAutoBtn.TextXAlignment = Enum.TextXAlignment.Left
-Instance.new("UICorner", RunAutoBtn)
-local Padding = Instance.new("UIPadding", RunAutoBtn)
-Padding.PaddingLeft = UDim.new(0, 15)
-
-RunAutoBtn.MouseButton1Click:Connect(function()
-    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))()
-end)
-
--- Fechar
-local Close = Instance.new("TextButton", Main)
-Close.Size = UDim2.fromOffset(30, 30)
-Close.Position = UDim2.new(1, -35, 0, 5)
-Close.Text = "X"
-Close.TextColor3 = Color3.new(1, 0, 0)
-Close.BackgroundTransparency = 1
-Close.TextSize = 20
-Close.MouseButton1Click:Connect(function() sg:Destroy() end)
-
--- Arrastar
-local function drag()
+-- Draggable (Funciona tanto no Main quanto no botão flutuante)
+local function makeDraggable(frame)
     local dragging, dragInput, dragStart, startPos
-    Main.InputBegan:Connect(function(input)
+    frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = input.Position; startPos = Main.Position
+            dragging = true; dragStart = input.Position; startPos = frame.Position
         end
     end)
-    Main.InputChanged:Connect(function(input)
+    frame.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
     game:GetService("UserInputService").InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
 end
-drag()
+
+makeDraggable(Main)
+makeDraggable(OpenBtn)
+
+print("🩴 CHINELAO PREMIUM: Minimizar Adicionado!")
