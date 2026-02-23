@@ -35,37 +35,31 @@ sg.Name = "ChinelaoPremium_Final_V11"
 sg.ResetOnSpawn = false
 sg.Parent = parentGui
 
--- [[ VARIÁVEIS DE ESTADO ]] --
+-- [[ ESTADOS ]] --
 _G.WalkSpeedValue = 16
 _G.AutoPurchase = false
+_G.SelectedBrainrot = "None"
+_G.AutoFarmEnabled = false
 
 -- [[ BOTÃO ABRIR ]] --
 local OpenBtn = Instance.new("ImageButton", sg)
 OpenBtn.Size = UDim2.fromOffset(65, 65)
 OpenBtn.Position = UDim2.new(0, 20, 0.5, 0)
-OpenBtn.BackgroundTransparency = 1
-OpenBtn.Visible = false
-OpenBtn.ZIndex = 100
-OpenBtn.Image = "rbxassetid://131109000100412"
-OpenBtn.ImageColor3 = Color3.new(1, 1, 1)
+OpenBtn.BackgroundTransparency = 1; OpenBtn.Visible = false; OpenBtn.ZIndex = 100
+OpenBtn.Image = "rbxassetid://131109000100412"; OpenBtn.ImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 12)
 local OpenStroke = Instance.new("UIStroke", OpenBtn)
 OpenStroke.Color = COLORS.ACCENT; OpenStroke.Thickness = 2
 
 -- [[ FRAME PRINCIPAL ]] --
 local Main = Instance.new("Frame", sg)
-Main.AnchorPoint = Vector2.new(0.5, 0.5)
-Main.Size = UDim2.fromOffset(720, 480)
-Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-Main.BackgroundColor3 = COLORS.BG
-Main.ZIndex = 10
+Main.AnchorPoint = Vector2.new(0.5, 0.5); Main.Size = UDim2.fromOffset(720, 480); Main.Position = UDim2.new(0.5, 0, 0.5, 0); Main.BackgroundColor3 = COLORS.BG; Main.ZIndex = 10
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 Instance.new("UIStroke", Main).Color = COLORS.STROKE
 
 -- TOP BAR
 local TopBar = Instance.new("Frame", Main)
 TopBar.Size = UDim2.new(1, 0, 0, 50); TopBar.BackgroundTransparency = 1; TopBar.ZIndex = 11
-
 local Title = Instance.new("TextLabel", TopBar)
 Title.Size = UDim2.new(0, 300, 1, 0); Title.Position = UDim2.new(0, 25, 0, 0); Title.BackgroundTransparency = 1
 Title.Text = "CHINELÃO HUB"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.TextXAlignment = 0; Title.ZIndex = 12
@@ -73,7 +67,6 @@ Title.Text = "CHINELÃO HUB"; Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.
 -- BOTÕES CONTROLE
 local Controls = Instance.new("Frame", TopBar)
 Controls.Size = UDim2.new(0, 100, 1, 0); Controls.Position = UDim2.new(1, -110, 0, 0); Controls.BackgroundTransparency = 1
-
 local function createControlBtn(txt, pos, hoverColor, callback)
     local b = Instance.new("TextButton", Controls)
     b.Size = UDim2.fromOffset(35, 35); b.Position = UDim2.new(0, pos, 0.5, -17); b.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
@@ -82,7 +75,6 @@ local function createControlBtn(txt, pos, hoverColor, callback)
     b.MouseLeave:Connect(function() b.BackgroundColor3 = Color3.fromRGB(30, 35, 45) end)
     b.MouseButton1Click:Connect(callback)
 end
-
 createControlBtn("-", 0, COLORS.ACCENT, function() Main.Visible = false; OpenBtn.Visible = true end)
 createControlBtn("X", 45, COLORS.HOVER_RED, function() sg:Destroy() end)
 OpenBtn.MouseButton1Click:Connect(function() OpenBtn.Visible = false; Main.Visible = true end)
@@ -92,17 +84,15 @@ local Sidebar = Instance.new("Frame", Main)
 Sidebar.Size = UDim2.new(0, 180, 1, -120); Sidebar.Position = UDim2.new(0, 0, 0, 60); Sidebar.BackgroundColor3 = COLORS.SIDEBAR; Sidebar.BackgroundTransparency = 0.6; Sidebar.ZIndex = 11
 Instance.new("UIListLayout", Sidebar).HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- CONTAINER
+-- CONTAINER PÁGINAS
 local Container = Instance.new("Frame", Main)
 Container.Size = UDim2.new(1, -210, 1, -80); Container.Position = UDim2.new(0, 195, 0, 65); Container.BackgroundTransparency = 1; Container.ZIndex = 11
-
 local pages = {}
 local function createPage(name)
     local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 3; p.ZIndex = 15; p.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Instance.new("UIListLayout", p).Padding = UDim.new(0, 12); pages[name] = p; return p
 end
 
--- CRIAÇÃO DAS PÁGINAS (PLAYER, FARM, FLY, SERVERS)
 local pPlayer = createPage("PLAYER"); pPlayer.Visible = true
 local pFarm = createPage("FARM")
 local pFly = createPage("FLY")
@@ -114,53 +104,9 @@ local function createTab(name)
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function() for _, v in pairs(pages) do v.Visible = false end; pages[name].Visible = true end)
 end
+createTab("PLAYER"); createTab("FARM"); createTab("FLY"); createTab("SERVERS")
 
-createTab("PLAYER")
-createTab("FARM")
-createTab("FLY")
-createTab("SERVERS")
-
--- [[ COMPONENTE SLIDER ]] --
-local function createSlider(parent, text, min, max, callback)
-    local card = Instance.new("Frame", parent)
-    card.Size = UDim2.new(1, -10, 0, 85); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    
-    local title = Instance.new("TextLabel", card)
-    title.Text = "Speed Modifier"; title.Size = UDim2.new(0, 200, 0, 20); title.Position = UDim2.new(0, 15, 0, 8); title.TextColor3 = COLORS.NEON_GREEN; title.Font = Enum.Font.GothamBold; title.TextSize = 14; title.BackgroundTransparency = 1; title.TextXAlignment = 0; title.ZIndex = 17
-
-    local name = Instance.new("TextLabel", card)
-    name.Text = text; name.Size = UDim2.new(0, 200, 0, 20); name.Position = UDim2.new(0, 15, 0, 30); name.TextColor3 = COLORS.TEXT; name.Font = Enum.Font.GothamSemibold; name.TextSize = 14; name.BackgroundTransparency = 1; name.TextXAlignment = 0; name.ZIndex = 17
-
-    local valueLabel = Instance.new("TextLabel", card)
-    valueLabel.Text = _G.WalkSpeedValue .. " speed"; valueLabel.Size = UDim2.new(0, 100, 0, 20); valueLabel.Position = UDim2.new(1, -115, 0, 30); valueLabel.TextColor3 = COLORS.NEON_GREEN; valueLabel.Font = Enum.Font.GothamBold; valueLabel.TextSize = 14; valueLabel.BackgroundTransparency = 1; valueLabel.TextXAlignment = 2; valueLabel.ZIndex = 17
-
-    local sliderBg = Instance.new("Frame", card)
-    sliderBg.Size = UDim2.new(1, -30, 0, 4); sliderBg.Position = UDim2.new(0, 15, 0, 55); sliderBg.BackgroundColor3 = Color3.fromRGB(45, 55, 72); sliderBg.ZIndex = 17; Instance.new("UICorner", sliderBg)
-
-    local sliderFill = Instance.new("Frame", sliderBg)
-    sliderFill.Size = UDim2.new(0, 0, 1, 0); sliderFill.BackgroundColor3 = COLORS.NEON_GREEN; sliderFill.ZIndex = 18; Instance.new("UICorner", sliderFill)
-
-    local button = Instance.new("TextButton", sliderBg)
-    button.Size = UDim2.fromOffset(16, 16); button.Position = UDim2.new(0, -8, 0.5, -8); button.BackgroundColor3 = Color3.new(1,1,1); button.Text = ""; button.ZIndex = 19; Instance.new("UICorner", button).CornerRadius = UDim.new(1, 0)
-
-    local dragging = false
-    local function update()
-        local inputPos = UserInputService:GetMouseLocation().X
-        local sliderPos = sliderBg.AbsolutePosition.X
-        local sliderWidth = sliderBg.AbsoluteSize.X
-        local percent = math.clamp((inputPos - sliderPos) / sliderWidth, 0, 1)
-        sliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        button.Position = UDim2.new(percent, -8, 0.5, -8)
-        local val = math.floor(min + (max - min) * percent)
-        valueLabel.Text = val .. " speed"
-        callback(val)
-    end
-    button.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end end)
-    UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-    UserInputService.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then update() end end)
-end
-
--- [[ COMPONENTE TOGGLE ]] --
+-- [[ COMPONENTES ]] --
 local function createToggle(parent, text, callback)
     local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 55); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", card); l.Text = text; l.Size = UDim2.new(1, -70, 1, 0); l.Position = UDim2.new(0, 18, 0, 0); l.TextColor3 = COLORS.TEXT; l.Font = Enum.Font.GothamSemibold; l.TextSize = 15; l.BackgroundTransparency = 1; l.TextXAlignment = 0; l.ZIndex = 17
@@ -175,23 +121,56 @@ local function createToggle(parent, text, callback)
     end)
 end
 
+-- [[ DROPDOWN AUTO FARM (NOVO) ]] --
+local function createDropdown(parent, text, list, callback)
+    local card = Instance.new("Frame", parent); card.Size = UDim2.new(1, -10, 0, 60); card.BackgroundColor3 = COLORS.CARD_BG; card.ZIndex = 16; card.ClipsDescendants = true
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    
+    local title = Instance.new("TextLabel", card); title.Text = text; title.Size = UDim2.new(1, -100, 0, 60); title.Position = UDim2.new(0, 18, 0, 0); title.TextColor3 = COLORS.TEXT; title.Font = Enum.Font.GothamSemibold; title.TextSize = 15; title.BackgroundTransparency = 1; title.TextXAlignment = 0; title.ZIndex = 17
+    
+    local btn = Instance.new("TextButton", card); btn.Text = "Select ▼"; btn.Size = UDim2.new(0, 120, 0, 35); btn.Position = UDim2.new(1, -135, 0, 12.5); btn.BackgroundColor3 = Color3.fromRGB(30, 35, 45); btn.TextColor3 = COLORS.ACCENT; btn.Font = Enum.Font.GothamBold; btn.TextSize = 13; btn.ZIndex = 18
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+    local dropFrame = Instance.new("ScrollingFrame", parent); dropFrame.Visible = false; dropFrame.Size = UDim2.new(1, -10, 0, 150); dropFrame.BackgroundColor3 = COLORS.SIDEBAR; dropFrame.ZIndex = 30; dropFrame.ScrollBarThickness = 2; dropFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Instance.new("UIListLayout", dropFrame).Padding = UDim.new(0, 5)
+    Instance.new("UICorner", dropFrame)
+
+    btn.MouseButton1Click:Connect(function() dropFrame.Visible = not dropFrame.Visible end)
+
+    for _, item in pairs(list) do
+        local opt = Instance.new("TextButton", dropFrame); opt.Text = item; opt.Size = UDim2.new(1, 0, 0, 35); opt.BackgroundColor3 = Color3.fromRGB(40, 45, 55); opt.TextColor3 = COLORS.TEXT; opt.Font = Enum.Font.GothamMedium; opt.TextSize = 13; opt.ZIndex = 31
+        opt.MouseButton1Click:Connect(function()
+            btn.Text = item; dropFrame.Visible = false; callback(item)
+        end)
+    end
+end
+
 -- [[ ABA PLAYER ]] --
 createToggle(pPlayer, "Auto Purchase", function(s) _G.AutoPurchase = s end)
-createSlider(pPlayer, "Walk Speed", 32, 300, function(v) _G.WalkSpeedValue = v end)
 
--- [[ ABA FARM ]] --
--- Você pode adicionar botões de farm aqui usando createToggle(pFarm, "Nome", function(s) ... end)
+-- [[ ABA FARM (SISTEMA DE BRAINROTS) ]] --
+local brainrots = {"Skibidi", "Caseoh", "Grimace", "Ice Spice", "Nugget", "Smurf Cat", "Walter White"} -- Edite aqui os nomes do jogo!
 
--- [[ ABA FLY ]] --
+createDropdown(pFarm, "Select Brainrot", brainrots, function(choice)
+    _G.SelectedBrainrot = choice
+    print("Selecionado: " .. choice)
+end)
+
+createToggle(pFarm, "Enable Auto Farm", function(s)
+    _G.AutoFarmEnabled = s
+    if s then
+        print("Farmando: " .. _G.SelectedBrainrot)
+        -- Aqui você colocaria a lógica de teleporte/clique para o mob selecionado
+    end
+end)
+
+-- [[ FLY & SERVERS ]] --
 createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
-
--- [[ ABA SERVERS ]] --
 createToggle(pServer, "Rejoin Server", function(s) if s then TeleportService:Teleport(game.PlaceId, LocalPlayer) end end)
 
 -- [[ LOOPS TÉCNICOS ]] --
 task.spawn(function()
-    while true do
-        task.wait(0.1)
+    while true do task.wait(0.1)
         pcall(function()
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
                 if LocalPlayer.Character.Humanoid.WalkSpeed ~= _G.WalkSpeedValue then
@@ -199,25 +178,6 @@ task.spawn(function()
                 end
             end
         end)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.AutoPurchase then
-            pcall(function()
-                for _, v in pairs(game:GetDescendants()) do
-                    if v:IsA("ProximityPrompt") then
-                        v.HoldDuration = 0
-                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                            local dist = (LocalPlayer.Character.HumanoidRootPart.Position - v.Parent.Position).Magnitude
-                            if dist < v.MaxActivationDistance then fireproximityprompt(v) end
-                        end
-                    end
-                end
-            end)
-        end
     end
 end)
 
