@@ -1,8 +1,8 @@
 --[[ 
-    🩴 CHINELÃO PREMIUM - AUTO-LOAD UPDATE
+    🩴 CHINELÃO PREMIUM - REAL AUTO-LOAD
     - Opção "auto load script" na aba HELPER
-    - Entrada e saída ultra lisas (Sine)
-    - Expansão centralizada (AnchorPoint 0.5)
+    - Usa Synapse/Executor QueueTeleport para auto-execução
+    - Entrada e saída Sine (Lisas)
 ]]
 
 local Players = game:GetService("Players")
@@ -12,6 +12,9 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
+
+-- Identificador do Script para o Auto-Load
+local MY_SCRIPT = [[loadstring(game:HttpGet("SEU_LINK_AQUI_OU_O_CODIGO_COMPLETO"))()]]
 
 local function GetSafeGui()
     if gethui then return gethui() end
@@ -30,8 +33,6 @@ local COLORS = {
     CARD_BG = Color3.fromRGB(10, 10, 15),
     TOGGLE_ON = Color3.fromRGB(34, 211, 238),
     TOGGLE_OFF = Color3.fromRGB(40, 45, 60),
-    HOVER_MIN = Color3.fromRGB(0, 190, 255),
-    HOVER_CLOSE = Color3.fromRGB(200, 0, 0)
 }
 
 -- [[ SISTEMA DE ARRASTAR ]] --
@@ -53,7 +54,7 @@ local function makeDraggable(gui)
 end
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "ChinelaoPremium_AutoLoad"
+sg.Name = "ChinelaoPremium_RealAuto"
 sg.ResetOnSpawn = false; sg.Parent = parentGui
 
 -- [[ BOTÃO MINIMIZADO ]] --
@@ -94,21 +95,11 @@ local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(0, 250, 0, 50); Title.Position = UDim2.new(0, 20, 0, 0); Title.Text = "CHINELÃO PREMIUM"
 Title.TextColor3 = COLORS.TEXT; Title.Font = Enum.Font.GothamBold; Title.TextSize = 18; Title.BackgroundTransparency = 1; Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Controles
-local function createControlBtn(text, pos, hoverColor)
-    local btn = Instance.new("TextButton", Main)
-    btn.Size = UDim2.fromOffset(35, 35); btn.Position = pos; btn.BackgroundColor3 = COLORS.BTN_BG; btn.Text = text; btn.TextColor3 = COLORS.TEXT
-    btn.Font = Enum.Font.GothamBold; btn.TextSize = 20; Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play() end)
-    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = COLORS.BTN_BG}):Play() end)
-    return btn
-end
-local MinBtn = createControlBtn("—", UDim2.new(1, -90, 0, 10), COLORS.HOVER_MIN)
-local CloseBtn = createControlBtn("X", UDim2.new(1, -45, 0, 10), COLORS.HOVER_CLOSE)
+local MinBtn = Instance.new("TextButton", Main)
+MinBtn.Size = UDim2.fromOffset(35, 35); MinBtn.Position = UDim2.new(1, -90, 0, 10); MinBtn.BackgroundColor3 = COLORS.BTN_BG; MinBtn.Text = "—"; MinBtn.TextColor3 = COLORS.TEXT; MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 20; Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 8)
 
 MinBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait(0.2); CleanAnimate(OpenBtn, true) end)
 OpenBtn.MouseButton1Click:Connect(function() CleanAnimate(OpenBtn, false); task.wait(0.2); CleanAnimate(Main, true) end)
-CloseBtn.MouseButton1Click:Connect(function() CleanAnimate(Main, false); task.wait(0.3); sg:Destroy() end)
 
 -- [ Sidebar e Conteúdo ] --
 local Sidebar = Instance.new("Frame", Main)
@@ -122,7 +113,7 @@ local function createPage()
     local p = Instance.new("ScrollingFrame", Container); p.Size = UDim2.new(1, 0, 1, 0); p.BackgroundTransparency = 1; p.Visible = false; p.ScrollBarThickness = 0
     Instance.new("UIListLayout", p).Padding = UDim.new(0, 8); return p
 end
-local pPlayer = createPage(); local pServers = createPage(); local pFly = createPage(); local pHelper = createPage()
+local pPlayer = createPage(); local pHelper = createPage()
 pPlayer.Visible = true
 
 local function createToggle(parent, text, callback)
@@ -141,28 +132,27 @@ end
 
 local function createTab(name, page)
     local b = Instance.new("TextButton", Sidebar); b.Size = UDim2.new(1, 0, 0, 35); b.BackgroundColor3 = COLORS.BTN_BG; b.Text = name; b.TextColor3 = COLORS.TEXT; b.Font = Enum.Font.GothamBold; b.TextSize = 13; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    b.MouseButton1Click:Connect(function() pPlayer.Visible = false; pServers.Visible = false; pFly.Visible = false; pHelper.Visible = false; page.Visible = true end)
+    b.MouseButton1Click:Connect(function() pPlayer.Visible = false; pHelper.Visible = false; page.Visible = true end)
 end
-createTab("PLAYER", pPlayer); createTab("SERVERS", pServers); createTab("FLY", pFly); createTab("HELPER", pHelper)
+createTab("PLAYER", pPlayer); createTab("HELPER", pHelper)
 
 -- [[ FUNÇÕES ]] --
 createToggle(pPlayer, "Instant Grab Brainrot", function(s) if s then loadstring(game:HttpGet("https://pastefy.app/CMe2Qy23/raw"))() end end)
-createToggle(pServers, "Server Premium (Hop)", function(s)
-    if s then
-        local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")) end)
-        if success and result.data then
-            for _, s in ipairs(result.data) do if s.playing < s.maxPlayers and s.id ~= game.JobId then TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id); break end end
+
+-- ABA HELPER COM AUTO-LOAD DO PRÓPRIO SCRIPT
+createToggle(pHelper, "auto load script", function(active)
+    if active then
+        -- Isso faz o script atual se auto-executar na troca de server
+        local queue_teleport = (syn and syn.queue_teleport) or (queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+        if queue_teleport then
+            Players.LocalPlayer.OnTeleport:Connect(function(State)
+                if State == Enum.TeleportState.Started then
+                    -- Substitua 'MY_SCRIPT' pelo link do seu Chinelão Hub se for link direto
+                    queue_teleport([[loadstring(game:HttpGet("LINK_DO_SEU_CHINELAO_HUB_AQUI"))()]])
+                end
+            end)
         end
     end
-end)
-createToggle(pFly, "Enable Fly GUI V3", function(s) if s then loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-FLY-GUI-V3-19840"))() end end)
-
--- ABA HELPER ATUALIZADA
-createToggle(pHelper, "auto load script", function(s) 
-    if s then 
-        -- Carregamento do Chilli Hub / Auto Load
-        loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/66e067f17cbfa177b7bed91c1bdcb466.lua"))() 
-    end 
 end)
 
 makeDraggable(Main); makeDraggable(OpenBtn)
